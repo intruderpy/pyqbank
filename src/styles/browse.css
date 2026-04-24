@@ -1,0 +1,98 @@
+/* ============================================================
+   PYQBank — Browse Pages Shared Styles
+   ============================================================ */
+
+/* Navbar */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,15,26,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.navbar-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: var(--navbar-height);
+}
+.navbar-logo {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: 1.3rem; font-weight: 800;
+  color: var(--text-primary); text-decoration: none;
+}
+.navbar-links { display: flex; gap: var(--space-6); }
+.nav-link {
+  color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;
+  text-decoration: none; transition: var(--ease-default);
+  padding-bottom: 2px;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--brand-primary);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; color: var(--text-muted);
+}
+.breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--text-accent); }
+
+/* Browse Grid */
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6);
+}
+.browse-card {
+  text-decoration: none; color: var(--text-primary);
+  display: flex; flex-direction: column; gap: var(--space-3);
+  min-height: 160px;
+}
+.browse-card-top { display: flex; align-items: flex-start; gap: var(--space-3); }
+.browse-icon { font-size: 2.5rem; flex-shrink: 0; }
+.browse-card-title { font-size: 1.2rem; font-weight: 700; }
+.browse-card-desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+.browse-card-footer { margin-top: auto; padding-top: var(--space-4); }
+
+/* Exam tags */
+.exam-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.exam-tag {
+  background: var(--bg-glass); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm); padding: 2px 8px;
+  font-size: 0.75rem; color: var(--text-secondary);
+}
+
+/* Year / Session */
+.year-section { }
+.year-heading {
+  font-size: 1.5rem; font-weight: 800;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.session-card {
+  text-decoration: none; color: var(--text-primary);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.session-date { font-size: 0.9rem; font-weight: 600; }
+.session-shift { margin-top: 4px; }
+
+/* Empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 80px 0; color: var(--text-muted);
+  font-size: 1rem; text-align: center;
+}
+.empty-state span { font-size: 3rem; }
+
+@media (max-width: 640px) {
+  .navbar-links { display: none; }
+  .browse-grid { grid-template-columns: 1fr; }
+}
