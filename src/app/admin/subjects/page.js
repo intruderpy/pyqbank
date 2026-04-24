@@ -45,8 +45,12 @@ export default function SubjectManagerPage() {
         e.preventDefault();
         if (!newSubject.name.trim()) return notify("error", "Subject name required");
         const payload = { name: newSubject.name.trim(), slug: newSubject.slug || makeSlug(newSubject.name), icon: newSubject.icon || null };
-        const { data, error } = await supabase.from("subjects").insert([payload]).select();
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'subjects', payload: [payload] })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setSubjects([...subjects, data[0]]);
         setNewSubject({ name: "", slug: "", icon: "" });
         notify("success", "Subject added!");
@@ -57,8 +61,12 @@ export default function SubjectManagerPage() {
         if (!newTopic.subject_id) return notify("error", "Select a subject");
         if (!newTopic.name.trim()) return notify("error", "Topic name required");
         const payload = { subject_id: parseInt(newTopic.subject_id), name: newTopic.name.trim(), slug: newTopic.slug || makeSlug(newTopic.name) };
-        const { data, error } = await supabase.from("topics").insert([payload]).select("*, subjects(name)");
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'topics', payload: [payload], select: '*, subjects(name)' })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setTopics([...topics, data[0]]);
         setNewTopic({ ...newTopic, name: "", slug: "" });
         notify("success", "Topic added!");
@@ -69,8 +77,12 @@ export default function SubjectManagerPage() {
         if (!newSubtopic.topic_id) return notify("error", "Select a topic");
         if (!newSubtopic.name.trim()) return notify("error", "Subtopic name required");
         const payload = { topic_id: parseInt(newSubtopic.topic_id), name: newSubtopic.name.trim(), slug: newSubtopic.slug || makeSlug(newSubtopic.name) };
-        const { data, error } = await supabase.from("subtopics").insert([payload]).select("*, topics(name, subjects(name))");
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'subtopics', payload: [payload], select: '*, topics(name, subjects(name))' })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setSubtopics([...subtopics, data[0]]);
         setNewSubtopic({ ...newSubtopic, name: "", slug: "" });
         notify("success", "Subtopic added!");
@@ -83,8 +95,12 @@ export default function SubjectManagerPage() {
 
     const saveEdit = async (table, id, payload, setter, list) => {
         const finalPayload = { ...payload, slug: payload.slug || makeSlug(payload.name) };
-        const { error } = await supabase.from(table).update(finalPayload).eq("id", id);
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', table, payload: finalPayload, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         await fetchAll();
         cancelEdit();
         notify("success", "Updated!");
@@ -92,8 +108,12 @@ export default function SubjectManagerPage() {
 
     const handleDelete = async (table, id) => {
         if (!window.confirm("Delete? Child items (topics/subtopics/questions links) may be affected.")) return;
-        const { error } = await supabase.from(table).delete().eq("id", id);
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', table, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         await fetchAll();
         notify("success", "Deleted!");
     };

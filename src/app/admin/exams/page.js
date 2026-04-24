@@ -46,8 +46,12 @@ export default function ExamManagerPage() {
         e.preventDefault();
         if (!newExam.name.trim()) return notify("error", "Exam name required");
         const payload = { ...newExam, name: newExam.name.trim(), slug: newExam.slug || slug(newExam.name) };
-        const { data, error } = await supabase.from("exams").insert([payload]).select();
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'exams', payload: [payload] })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setExams([...exams, data[0]]);
         setNewExam({ name: "", slug: "", icon: "", description: "" });
         notify("success", "Exam added!");
@@ -58,8 +62,12 @@ export default function ExamManagerPage() {
         if (!newCat.exam_id) return notify("error", "Select an exam");
         if (!newCat.name.trim()) return notify("error", "Category name required");
         const payload = { exam_id: newCat.exam_id, name: newCat.name.trim(), slug: newCat.slug || slug(newCat.name) };
-        const { data, error } = await supabase.from("categories").insert([payload]).select("*, exams(name)");
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'categories', payload: [payload], select: '*, exams(name)' })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setCategories([...categories, data[0]]);
         setNewCat({ exam_id: newCat.exam_id, name: "", slug: "" });
         notify("success", "Category added!");
@@ -75,8 +83,12 @@ export default function ExamManagerPage() {
             exam_date: newSession.exam_date || null,
             shift: newSession.shift || null,
         };
-        const { data, error } = await supabase.from("exam_sessions").insert([payload]).select("*, categories(name, exams(name))");
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'insert', table: 'exam_sessions', payload: [payload], select: '*, categories(name, exams(name))' })
+        });
+        const { data, error } = await res.json();
+        if (error) return notify("error", error);
         setSessions([data[0], ...sessions]);
         setNewSession({ category_id: newSession.category_id, year: new Date().getFullYear(), exam_date: "", shift: "" });
         notify("success", "Session added!");
@@ -88,40 +100,59 @@ export default function ExamManagerPage() {
     const cancelEdit = () => { setEditingId(null); setEditData({}); };
 
     const saveExamEdit = async (id) => {
-        const { error } = await supabase.from("exams").update({
+        const payload = {
             name: editData.name, slug: editData.slug || slug(editData.name),
             icon: editData.icon, description: editData.description
-        }).eq("id", id);
-        if (error) return notify("error", error.message);
+        };
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', table: 'exams', payload, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         setExams(exams.map(e => e.id === id ? { ...e, ...editData } : e));
         cancelEdit(); notify("success", "Updated!");
     };
 
     const saveCatEdit = async (id) => {
-        const { error } = await supabase.from("categories").update({
+        const payload = {
             name: editData.name, slug: editData.slug || slug(editData.name), exam_id: parseInt(editData.exam_id)
-        }).eq("id", id);
-        if (error) return notify("error", error.message);
+        };
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', table: 'categories', payload, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         await fetchAll();
         cancelEdit(); notify("success", "Updated!");
     };
 
     const saveSessionEdit = async (id) => {
-        const { error } = await supabase.from("exam_sessions").update({
+        const payload = {
             year: parseInt(editData.year),
             exam_date: editData.exam_date || null,
             shift: editData.shift || null,
             category_id: parseInt(editData.category_id)
-        }).eq("id", id);
-        if (error) return notify("error", error.message);
+        };
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', table: 'exam_sessions', payload, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         await fetchAll();
         cancelEdit(); notify("success", "Updated!");
     };
 
     const handleDelete = async (table, id, setter, list) => {
         if (!window.confirm("Delete? Related questions may be affected.")) return;
-        const { error } = await supabase.from(table).delete().eq("id", id);
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', table, match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         setter(list.filter(i => i.id !== id));
         notify("success", "Deleted!");
     };

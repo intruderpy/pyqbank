@@ -102,12 +102,20 @@ export default function QuestionManagerPage() {
         };
 
         if (isEditing) {
-            const { error } = await supabase.from("questions").update(payload).eq("id", formData.id);
-            if (error) return notify("error", error.message);
+            const res = await fetch('/api/admin/mutate', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'update', table: 'questions', payload, match: { id: formData.id } })
+            });
+            const { error } = await res.json();
+            if (error) return notify("error", error);
             notify("success", "Question updated!");
         } else {
-            const { data, error } = await supabase.from("questions").insert([payload]).select();
-            if (error) return notify("error", error.message);
+            const res = await fetch('/api/admin/mutate', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'insert', table: 'questions', payload: [payload] })
+            });
+            const { data, error } = await res.json();
+            if (error) return notify("error", error);
             if (data) setQuestions([data[0], ...questions]);
             notify("success", "Question added!");
         }
@@ -136,8 +144,12 @@ export default function QuestionManagerPage() {
 
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this question permanently?")) return;
-        const { error } = await supabase.from("questions").delete().eq("id", id);
-        if (error) return notify("error", error.message);
+        const res = await fetch('/api/admin/mutate', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', table: 'questions', match: { id } })
+        });
+        const { error } = await res.json();
+        if (error) return notify("error", error);
         setQuestions(questions.filter(q => q.id !== id));
         notify("success", "Deleted!");
     };
