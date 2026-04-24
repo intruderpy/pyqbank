@@ -138,6 +138,8 @@ export default function YearQuestionsPage() {
 
   const label = `${category?.name ?? "Questions"} — ${year}`;
 
+  const isEnglishSelected = availableSubjects.find((s) => s.id === selectedSubject)?.slug === "english";
+
   return (
     <main>
       <nav className="navbar">
@@ -235,6 +237,7 @@ export default function YearQuestionsPage() {
             onLoadMore={handleLoadMore}
             hasMore={hasMore}
             loading={loading}
+            hideLangToggle={isEnglishSelected}
           />
         )}
       </div>

@@ -13,9 +13,10 @@ interface Props {
   onLoadMore: () => void;
   hasMore: boolean;
   loading: boolean;
+  hideLangToggle?: boolean;
 }
 
-export default function QuestionList({ questions, sessionLabel, onLoadMore, hasMore, loading }: Props) {
+export default function QuestionList({ questions, sessionLabel, onLoadMore, hasMore, loading, hideLangToggle }: Props) {
   const [mode, setMode] = useState<Mode>("qa");
   const [lang, setLang] = useState<Lang>("en");
   const [score, setScore] = useState({ correct: 0, attempted: 0 });
@@ -30,18 +31,20 @@ export default function QuestionList({ questions, sessionLabel, onLoadMore, hasM
         </div>
         <div className="controls-right">
           {/* Language Toggle */}
-          <div className="toggle-group">
-            <button
-              id="lang-en-btn"
-              className={`toggle-btn ${lang === "en" ? "active" : ""}`}
-              onClick={() => setLang("en")}
-            >EN</button>
-            <button
-              id="lang-hi-btn"
-              className={`toggle-btn ${lang === "hi" ? "active" : ""}`}
-              onClick={() => setLang("hi")}
-            >हिं</button>
-          </div>
+          {!hideLangToggle && (
+            <div className="toggle-group">
+              <button
+                id="lang-en-btn"
+                className={`toggle-btn ${lang === "en" ? "active" : ""}`}
+                onClick={() => setLang("en")}
+              >EN</button>
+              <button
+                id="lang-hi-btn"
+                className={`toggle-btn ${lang === "hi" ? "active" : ""}`}
+                onClick={() => setLang("hi")}
+              >हिं</button>
+            </div>
+          )}
           {/* Mode Toggle */}
           <div className="toggle-group">
             <button

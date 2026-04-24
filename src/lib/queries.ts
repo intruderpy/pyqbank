@@ -4,9 +4,12 @@ import type { Exam, Category, ExamSession, Subject, Topic, Subtopic, Question } 
 // ── Exams ──────────────────────────────────────────────────
 
 export async function getAllExams(): Promise<Exam[]> {
-  const { data, error } = await supabase.from("exams").select("*").order("name");
+  const { data, error } = await supabase
+    .from("exams")
+    .select("*, categories!inner(exam_sessions!inner(questions!inner(id)))")
+    .order("name");
   if (error) throw error;
-  return data ?? [];
+  return (data as any[])?.map(({ categories, ...rest }) => rest as Exam) ?? [];
 }
 
 export async function getExamBySlug(slug: string): Promise<Exam | null> {
@@ -18,9 +21,13 @@ export async function getExamBySlug(slug: string): Promise<Exam | null> {
 // ── Categories ─────────────────────────────────────────────
 
 export async function getCategoriesByExam(examId: number): Promise<Category[]> {
-  const { data, error } = await supabase.from("categories").select("*").eq("exam_id", examId).order("name");
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*, exam_sessions!inner(questions!inner(id))")
+    .eq("exam_id", examId)
+    .order("name");
   if (error) throw error;
-  return data ?? [];
+  return (data as any[])?.map(({ exam_sessions, ...rest }) => rest as Category) ?? [];
 }
 
 export async function getCategoryBySlug(examId: number, slug: string): Promise<Category | null> {
@@ -55,9 +62,12 @@ export async function getSessionsByCategoryAndYear(categoryId: number, year: num
 // ── Subjects ───────────────────────────────────────────────
 
 export async function getAllSubjects(): Promise<Subject[]> {
-  const { data, error } = await supabase.from("subjects").select("*").order("name");
+  const { data, error } = await supabase
+    .from("subjects")
+    .select("*, questions!inner(id)")
+    .order("name");
   if (error) throw error;
-  return data ?? [];
+  return (data as any[])?.map(({ questions, ...rest }) => rest as Subject) ?? [];
 }
 
 export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
@@ -69,9 +79,13 @@ export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
 // ── Topics & Subtopics ─────────────────────────────────────
 
 export async function getTopicsBySubject(subjectId: number): Promise<Topic[]> {
-  const { data, error } = await supabase.from("topics").select("*").eq("subject_id", subjectId).order("name");
+  const { data, error } = await supabase
+    .from("topics")
+    .select("*, questions!inner(id)")
+    .eq("subject_id", subjectId)
+    .order("name");
   if (error) throw error;
-  return data ?? [];
+  return (data as any[])?.map(({ questions, ...rest }) => rest as Topic) ?? [];
 }
 
 export async function getSubtopicsByTopic(topicId: number): Promise<Subtopic[]> {

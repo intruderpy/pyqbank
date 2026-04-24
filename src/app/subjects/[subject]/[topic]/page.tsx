@@ -167,6 +167,7 @@ export default function TopicQuestionsPage() {
             onLoadMore={handleLoadMore}
             hasMore={hasMore}
             loading={loading}
+            hideLangToggle={subjectSlug === "english"}
           />
         )}
       </div>
