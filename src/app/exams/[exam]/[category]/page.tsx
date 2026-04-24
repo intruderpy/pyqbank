@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { exam, category } = await params;
   return {
     title: `${category.toUpperCase()} PYQ — Select Year`,
-    description: `Browse ${exam.toUpperCase()} ${category.toUpperCase()} previous year questions by year and shift.`,
+    description: `Browse ${exam.toUpperCase()} ${category.toUpperCase()} previous year questions by year.`,
   };
 }
 
@@ -25,14 +25,8 @@ export default async function CategoryPage({ params }: Props) {
 
   const sessions = await getSessionsByCategory(category.id);
 
-  // Group sessions by year
-  const byYear = sessions.reduce<Record<number, typeof sessions>>((acc, s) => {
-    if (!acc[s.year]) acc[s.year] = [];
-    acc[s.year].push(s);
-    return acc;
-  }, {});
-
-  const years = Object.keys(byYear).map(Number).sort((a, b) => b - a);
+  // Get unique years
+  const years = Array.from(new Set(sessions.map((s) => s.year))).sort((a, b) => b - a);
 
   return (
     <main>
@@ -61,54 +55,30 @@ export default async function CategoryPage({ params }: Props) {
           <span className="gradient-text">{category.name}</span> — Select Year
         </h1>
         <p style={{ marginTop: "8px", marginBottom: "40px" }}>
-          Choose a year to browse questions by date and shift
+          Choose a year to browse all questions, dates, and shifts for {category.name}
         </p>
 
         {years.length === 0 ? (
           <div className="empty-state">
             <span>📭</span>
-            <p>No exam sessions found yet. Check back soon!</p>
+            <p>No questions found for this category yet. Check back soon!</p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="browse-grid">
             {years.map((year) => (
-              <div key={year} className="year-section">
-                <h2 className="year-heading">{year}</h2>
-                <div className="session-grid">
-                  {byYear[year].map((session) => {
-                    const dateStr = session.exam_date
-                      ? new Date(session.exam_date).toLocaleDateString("en-IN", {
-                          day: "numeric", month: "long", year: "numeric",
-                        })
-                      : "Date TBA";
-
-                    return (
-                      <Link
-                        key={session.id}
-                        href={`/exams/${examSlug}/${catSlug}/${session.id}`}
-                        className="session-card card"
-                      >
-                        <div className="session-date">📅 {dateStr}</div>
-                        {session.shift && (
-                          <div className="session-shift">
-                            <span className={`badge badge-${
-                              session.shift === "Morning" ? "info" :
-                              session.shift === "Evening" ? "warning" : "primary"
-                            }`}>
-                              {session.shift === "Morning" ? "🌅" :
-                               session.shift === "Evening" ? "🌆" : "☀️"}{" "}
-                              {session.shift} Shift
-                            </span>
-                          </div>
-                        )}
-                        <div style={{ marginTop: "16px" }}>
-                          <span className="btn btn-primary btn-sm">Practice Questions →</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+              <Link
+                key={year}
+                href={`/exams/${examSlug}/${catSlug}/${year}`}
+                className="browse-card card"
+                style={{ alignItems: "center", textAlign: "center", padding: "32px 16px" }}
+              >
+                <span style={{ fontSize: "3rem", fontWeight: "800", color: "var(--text-primary)" }}>
+                  {year}
+                </span>
+                <div className="browse-card-footer" style={{ marginTop: "16px", paddingTop: 0 }}>
+                  <span className="btn btn-outline btn-sm">Browse Questions →</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
