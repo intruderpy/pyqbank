@@ -85,6 +85,7 @@ export type Database = {
       questions: {
         Row: {
           id: number;
+          slug: string | null;
           exam_session_id: number | null;
           subject_id: number | null;
           topic_id: number | null;

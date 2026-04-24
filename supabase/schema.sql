@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS subtopics (
 
 CREATE TABLE IF NOT EXISTS questions (
   id                SERIAL PRIMARY KEY,
+  slug              TEXT UNIQUE,
   exam_session_id   INTEGER REFERENCES exam_sessions(id) ON DELETE SET NULL,
   subject_id        INTEGER REFERENCES subjects(id) ON DELETE SET NULL,
   topic_id          INTEGER REFERENCES topics(id) ON DELETE SET NULL,

@@ -94,6 +94,12 @@ export async function getSubtopicsByTopic(topicId: number): Promise<Subtopic[]> 
   return data ?? [];
 }
 
+export async function getSubtopicBySlug(topicId: number, slug: string): Promise<Subtopic | null> {
+  const { data, error } = await supabase.from("subtopics").select("*").eq("topic_id", topicId).eq("slug", slug).single();
+  if (error) return null;
+  return data;
+}
+
 // ── Questions ──────────────────────────────────────────────
 
 export async function getQuestionsByAdvancedFilter(
@@ -162,4 +168,22 @@ export async function getQuestionsBySubject(
     .range(page * pageSize, (page + 1) * pageSize - 1);
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getQuestionBySlug(slug: string): Promise<any | null> {
+  const { data, error } = await supabase
+    .from("questions")
+    .select(`
+      *,
+      topics(name, slug, subjects(name, slug)),
+      exam_sessions(year, exam_date, shift, categories(name, slug, exams(name, slug)))
+    `)
+    .eq("slug", slug)
+    .single();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+  return data;
 }
