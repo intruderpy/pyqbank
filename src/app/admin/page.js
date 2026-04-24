@@ -9,59 +9,56 @@ export default async function AdminDashboard() {
     const { count: sCount } = await supabase.from('subjects').select('*', { count: 'exact', head: true })
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
-            <div className="max-w-5xl mx-auto mt-8">
-                <div className="flex justify-between items-center mb-10">
-                    <h1 className="text-4xl font-bold text-white">⚙️ Admin Dashboard</h1>
-                    <Link href="/" className="text-slate-400 hover:text-white border border-slate-700 px-4 py-2 rounded-lg">
-                        ← View Website
+        <div className="admin-container">
+            <div className="admin-header">
+                <div>
+                    <h1>⚙️ Admin Dashboard</h1>
+                    <p>Database Connected 🟢</p>
+                </div>
+                <Link href="/" className="admin-btn admin-btn-outline">
+                    ← View Website
+                </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="admin-grid-cols-4 mb-4">
+                <div className="admin-card">
+                    <div className="admin-label">Total Questions</div>
+                    <div className="text-orange" style={{ fontSize: '2rem', fontWeight: 'bold' }}>{qCount || 0}</div>
+                </div>
+                <div className="admin-card">
+                    <div className="admin-label">Total Exams</div>
+                    <div className="text-blue" style={{ fontSize: '2rem', fontWeight: 'bold' }}>{eCount || 0}</div>
+                </div>
+                <div className="admin-card">
+                    <div className="admin-label">Total Subjects</div>
+                    <div className="text-purple" style={{ fontSize: '2rem', fontWeight: 'bold' }}>{sCount || 0}</div>
+                </div>
+            </div>
+
+            {/* Modules */}
+            <div className="admin-card-header mt-4">Manage Platform</div>
+            <div className="admin-grid-cols-3">
+                <div className="admin-card">
+                    <h3 className="text-white mb-4" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>📝 Questions</h3>
+                    <p className="text-muted mb-4">Add, edit or delete bilingual PYQs for any exam session or subject.</p>
+                    <Link href="/admin/add" className="admin-btn admin-btn-primary admin-btn-lg">
+                        ➕ Manage Questions
                     </Link>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                        <div className="text-slate-400 mb-1 text-sm">Total Questions</div>
-                        <div className="text-4xl font-bold text-orange-500">{qCount || 0}</div>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                        <div className="text-slate-400 mb-1 text-sm">Total Exams</div>
-                        <div className="text-4xl font-bold text-blue-500">{eCount || 0}</div>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                        <div className="text-slate-400 mb-1 text-sm">Total Subjects</div>
-                        <div className="text-4xl font-bold text-purple-500">{sCount || 0}</div>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-                        <div className="text-slate-400 mb-1 text-sm">Database Status</div>
-                        <div className="text-2xl font-bold text-green-500 mt-2">Connected 🟢</div>
-                    </div>
+                <div className="admin-card">
+                    <h3 className="text-white mb-4" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>🏛️ Exams</h3>
+                    <p className="text-muted mb-4">Manage Exams → Categories → Sessions (Year, Date, Shift).</p>
+                    <Link href="/admin/exams" className="admin-btn admin-btn-blue admin-btn-lg">
+                        ⚙️ Manage Exams
+                    </Link>
                 </div>
-
-                {/* Modules */}
-                <h2 className="text-xl font-bold mb-6 border-b border-slate-800 pb-3">Manage Platform</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-orange-500/50 transition duration-300">
-                        <h3 className="text-xl font-bold text-white mb-2">📝 Questions</h3>
-                        <p className="text-sm text-slate-400 mb-6">Add, edit or delete bilingual PYQs for any exam session or subject.</p>
-                        <Link href="/admin/add" className="inline-block bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold w-full text-center transition">
-                            ➕ Manage Questions
-                        </Link>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-blue-500/50 transition duration-300">
-                        <h3 className="text-xl font-bold text-white mb-2">🏛️ Exams</h3>
-                        <p className="text-sm text-slate-400 mb-6">Manage Exams → Categories → Sessions (Year, Date, Shift).</p>
-                        <Link href="/admin/exams" className="inline-block bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold w-full text-center transition">
-                            ⚙️ Manage Exams
-                        </Link>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:border-purple-500/50 transition duration-300">
-                        <h3 className="text-xl font-bold text-white mb-2">📚 Subjects</h3>
-                        <p className="text-sm text-slate-400 mb-6">Manage Subjects → Topics → Subtopics hierarchy.</p>
-                        <Link href="/admin/subjects" className="inline-block bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold w-full text-center transition">
-                            ⚙️ Manage Subjects
-                        </Link>
-                    </div>
+                <div className="admin-card">
+                    <h3 className="text-white mb-4" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>📚 Subjects</h3>
+                    <p className="text-muted mb-4">Manage Subjects → Topics → Subtopics hierarchy.</p>
+                    <Link href="/admin/subjects" className="admin-btn admin-btn-purple admin-btn-lg">
+                        ⚙️ Manage Subjects
+                    </Link>
                 </div>
             </div>
         </div>

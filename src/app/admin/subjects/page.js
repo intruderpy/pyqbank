@@ -110,209 +110,216 @@ export default function SubjectManagerPage() {
     const activeColor = tabs.find(t => t.id === activeTab)?.color;
 
     return (
-        <div className="min-h-screen bg-[#0F1117] text-slate-200 p-4 md:p-6 font-sans">
-            <div className="max-w-5xl mx-auto">
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6 border-b border-[#2A2D3A] pb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">📚 Subject Manager</h1>
-                        <p className="text-sm text-slate-400 mt-1">Subjects → Topics → Subtopics hierarchy</p>
-                    </div>
-                    <Link href="/admin" className="text-sm bg-[#1A1D27] border border-[#2A2D3A] px-4 py-2 rounded hover:text-white transition">
-                        ← Dashboard
-                    </Link>
+        <div className="admin-container">
+            {/* Header */}
+            <div className="admin-header">
+                <div>
+                    <h1>📚 Subject Manager</h1>
+                    <p>Subjects → Topics → Subtopics hierarchy</p>
                 </div>
+                <Link href="/admin" className="admin-btn admin-btn-outline">
+                    ← Dashboard
+                </Link>
+            </div>
 
-                {/* Notification */}
-                {notification && (
-                    <div className={`mb-4 p-3 rounded-lg border text-sm font-bold ${notification.type === "error" ? "bg-red-500/10 border-red-500/40 text-red-400" : "bg-green-500/10 border-green-500/40 text-green-400"
-                        }`}>
-                        {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
-                    </div>
-                )}
-
-                {/* Tabs */}
-                <div className="flex gap-2 mb-6 border-b border-[#2A2D3A]">
-                    {tabs.map(t => (
-                        <button key={t.id} onClick={() => { setActiveTab(t.id); cancelEdit(); }}
-                            className={`px-5 py-2 text-sm font-bold transition-colors border-b-2 ${activeTab === t.id ? tabColors[t.color] : "border-transparent text-slate-400 hover:text-white"
-                                }`}>
-                            {t.label}
-                        </button>
-                    ))}
+            {/* Notification */}
+            {notification && (
+                <div className={`admin-alert ${notification.type}`}>
+                    {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
                 </div>
+            )}
 
-                {/* ── SUBJECTS TAB ── */}
-                {activeTab === "subjects" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addSubject} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-3">Add New Subject</div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-orange-500"
+            {/* Tabs */}
+            <div className="admin-tabs">
+                {tabs.map(t => (
+                    <button key={t.id} onClick={() => { setActiveTab(t.id); cancelEdit(); }}
+                        className={`admin-tab ${activeTab === t.id ? `active ${t.color}` : ""}`}>
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* ── SUBJECTS TAB ── */}
+            {activeTab === "subjects" && (
+                <div className="space-y-4">
+                    <form onSubmit={addSubject} className="admin-card">
+                        <div className="admin-card-header text-orange" style={{ color: '#fb923c' }}>Add New Subject</div>
+                        <div className="admin-grid-cols-4">
+                            <div className="col-span-2">
+                                <input className="admin-input orange"
                                     placeholder="Subject name (e.g. Mathematics)" value={newSubject.name}
                                     onChange={e => setNewSubject({ ...newSubject, name: e.target.value })} />
-                                <input className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none"
-                                    placeholder="Icon emoji (e.g. ➗)" value={newSubject.icon}
-                                    onChange={e => setNewSubject({ ...newSubject, icon: e.target.value })} />
-                                <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add Subject</button>
                             </div>
-                        </form>
-
-                        <div className="space-y-2">
-                            {subjects.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
-                                            <input className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.icon || ""} placeholder="Icon"
-                                                onChange={e => setEditData({ ...editData, icon: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveEdit("subjects", item.id, { name: editData.name, slug: editData.slug, icon: editData.icon })} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="mr-2">{item.icon}</span>
-                                                <span className="font-bold text-slate-200">{item.name}</span>
-                                                <span className="ml-2 text-xs text-slate-500 font-mono">/{item.slug}</span>
-                                                <span className="ml-3 text-xs text-slate-600">
-                                                    {topics.filter(t => t.subject_id === item.id).length} topics
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("subjects", item.id)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            <input className="admin-input"
+                                placeholder="Icon emoji (e.g. ➗)" value={newSubject.icon}
+                                onChange={e => setNewSubject({ ...newSubject, icon: e.target.value })} />
+                            <button className="admin-btn admin-btn-primary">Add Subject</button>
                         </div>
-                    </div>
-                )}
+                    </form>
 
-                {/* ── TOPICS TAB ── */}
-                {activeTab === "topics" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addTopic} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Add Topic under a Subject</div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none text-slate-200"
-                                    value={newTopic.subject_id} onChange={e => setNewTopic({ ...newTopic, subject_id: e.target.value })}>
-                                    <option value="">-- Select Subject --</option>
-                                    {subjects.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
-                                </select>
-                                <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
+                    <div className="space-y-2">
+                        {subjects.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4">
+                                        <div className="col-span-2">
+                                            <input className="admin-input"
+                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                                        </div>
+                                        <input className="admin-input"
+                                            value={editData.icon || ""} placeholder="Icon"
+                                            onChange={e => setEditData({ ...editData, icon: e.target.value })} />
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveEdit("subjects", item.id, { name: editData.name, slug: editData.slug, icon: editData.icon })} className="admin-btn admin-btn-green">Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline">Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between">
+                                        <div>
+                                            <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+                                            <span style={{ fontWeight: 'bold' }}>{item.name}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>/{item.slug}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.75rem', fontSize: '0.75rem' }}>
+                                                {topics.filter(t => t.subject_id === item.id).length} topics
+                                            </span>
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("subjects", item.id)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── TOPICS TAB ── */}
+            {activeTab === "topics" && (
+                <div className="space-y-4">
+                    <form onSubmit={addTopic} className="admin-card">
+                        <div className="admin-card-header text-blue" style={{ color: '#60a5fa' }}>Add Topic under a Subject</div>
+                        <div className="admin-grid-cols-4">
+                            <select className="admin-input"
+                                value={newTopic.subject_id} onChange={e => setNewTopic({ ...newTopic, subject_id: e.target.value })}>
+                                <option value="">-- Select Subject --</option>
+                                {subjects.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
+                            </select>
+                            <div className="col-span-2">
+                                <input className="admin-input blue"
                                     placeholder="Topic name (e.g. Polity, Algebra)" value={newTopic.name}
                                     onChange={e => setNewTopic({ ...newTopic, name: e.target.value })} />
-                                <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add Topic</button>
                             </div>
-                        </form>
-
-                        <div className="space-y-2">
-                            {topics.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none text-slate-200"
-                                                value={editData.subject_id} onChange={e => setEditData({ ...editData, subject_id: e.target.value })}>
-                                                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                            </select>
-                                            <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveEdit("topics", item.id, { name: editData.name, slug: editData.slug, subject_id: parseInt(editData.subject_id) })} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="text-orange-400 text-xs font-bold px-2 py-0.5 bg-orange-500/10 rounded mr-2">
-                                                    {item.subjects?.name}
-                                                </span>
-                                                <span className="font-bold text-slate-200">{item.name}</span>
-                                                <span className="ml-2 text-xs text-slate-500 font-mono">/{item.slug}</span>
-                                                <span className="ml-3 text-xs text-slate-600">
-                                                    {subtopics.filter(s => s.topic_id === item.id).length} subtopics
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("topics", item.id)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            <button className="admin-btn admin-btn-blue">Add Topic</button>
                         </div>
-                    </div>
-                )}
+                    </form>
 
-                {/* ── SUBTOPICS TAB ── */}
-                {activeTab === "subtopics" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addSubtopic} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-3">Add Subtopic under a Topic</div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none text-slate-200"
-                                    value={newSubtopic.topic_id} onChange={e => setNewSubtopic({ ...newSubtopic, topic_id: e.target.value })}>
-                                    <option value="">-- Select Topic --</option>
-                                    {topics.map(t => <option key={t.id} value={t.id}>{t.subjects?.name} › {t.name}</option>)}
-                                </select>
-                                <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-purple-500"
+                    <div className="space-y-2">
+                        {topics.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4">
+                                        <select className="admin-input"
+                                            value={editData.subject_id} onChange={e => setEditData({ ...editData, subject_id: e.target.value })}>
+                                            {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <div className="col-span-2">
+                                            <input className="admin-input"
+                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                                        </div>
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveEdit("topics", item.id, { name: editData.name, slug: editData.slug, subject_id: parseInt(editData.subject_id) })} className="admin-btn admin-btn-green">Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline">Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between">
+                                        <div>
+                                            <span className="admin-badge orange">
+                                                {item.subjects?.name}
+                                            </span>
+                                            <span style={{ fontWeight: 'bold' }}>{item.name}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>/{item.slug}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.75rem', fontSize: '0.75rem' }}>
+                                                {subtopics.filter(s => s.topic_id === item.id).length} subtopics
+                                            </span>
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("topics", item.id)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── SUBTOPICS TAB ── */}
+            {activeTab === "subtopics" && (
+                <div className="space-y-4">
+                    <form onSubmit={addSubtopic} className="admin-card">
+                        <div className="admin-card-header text-purple" style={{ color: '#c084fc' }}>Add Subtopic under a Topic</div>
+                        <div className="admin-grid-cols-4">
+                            <select className="admin-input"
+                                value={newSubtopic.topic_id} onChange={e => setNewSubtopic({ ...newSubtopic, topic_id: e.target.value })}>
+                                <option value="">-- Select Topic --</option>
+                                {topics.map(t => <option key={t.id} value={t.id}>{t.subjects?.name} › {t.name}</option>)}
+                            </select>
+                            <div className="col-span-2">
+                                <input className="admin-input purple"
                                     placeholder="Subtopic name (e.g. President, LCM-HCF)" value={newSubtopic.name}
                                     onChange={e => setNewSubtopic({ ...newSubtopic, name: e.target.value })} />
-                                <button className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add Subtopic</button>
                             </div>
-                        </form>
-
-                        <div className="space-y-2">
-                            {subtopics.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none text-slate-200"
-                                                value={editData.topic_id} onChange={e => setEditData({ ...editData, topic_id: e.target.value })}>
-                                                {topics.map(t => <option key={t.id} value={t.id}>{t.subjects?.name} › {t.name}</option>)}
-                                            </select>
-                                            <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveEdit("subtopics", item.id, { name: editData.name, slug: editData.slug, topic_id: parseInt(editData.topic_id) })} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="text-blue-400 text-xs font-bold px-2 py-0.5 bg-blue-500/10 rounded mr-1">
-                                                    {item.topics?.subjects?.name}
-                                                </span>
-                                                <span className="text-slate-500 text-xs mr-1">›</span>
-                                                <span className="text-orange-400 text-xs font-bold px-2 py-0.5 bg-orange-500/10 rounded mr-2">
-                                                    {item.topics?.name}
-                                                </span>
-                                                <span className="font-bold text-slate-200">{item.name}</span>
-                                                <span className="ml-2 text-xs text-slate-500 font-mono">/{item.slug}</span>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("subtopics", item.id)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            <button className="admin-btn admin-btn-purple">Add Subtopic</button>
                         </div>
+                    </form>
+
+                    <div className="space-y-2">
+                        {subtopics.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4">
+                                        <select className="admin-input"
+                                            value={editData.topic_id} onChange={e => setEditData({ ...editData, topic_id: e.target.value })}>
+                                            {topics.map(t => <option key={t.id} value={t.id}>{t.subjects?.name} › {t.name}</option>)}
+                                        </select>
+                                        <div className="col-span-2">
+                                            <input className="admin-input"
+                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                                        </div>
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveEdit("subtopics", item.id, { name: editData.name, slug: editData.slug, topic_id: parseInt(editData.topic_id) })} className="admin-btn admin-btn-green">Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline">Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between">
+                                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            <span className="admin-badge blue" style={{ marginRight: '0.25rem' }}>
+                                                {item.topics?.subjects?.name}
+                                            </span>
+                                            <span className="text-muted" style={{ fontSize: '0.75rem', marginRight: '0.25rem' }}>›</span>
+                                            <span className="admin-badge orange" style={{ marginRight: '0.5rem' }}>
+                                                {item.topics?.name}
+                                            </span>
+                                            <span style={{ fontWeight: 'bold' }}>{item.name}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>/{item.slug}</span>
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("subtopics", item.id)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

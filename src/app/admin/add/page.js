@@ -149,243 +149,228 @@ export default function QuestionManagerPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0F1117] text-slate-200 p-4 md:p-6 font-sans">
-            <div className="max-w-7xl mx-auto">
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6 border-b border-[#2A2D3A] pb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">📝 Question Manager</h1>
-                        <p className="text-sm text-slate-400 mt-1">Add or edit bilingual PYQs with full hierarchy.</p>
-                    </div>
-                    <Link href="/admin" className="text-sm bg-[#1A1D27] border border-[#2A2D3A] px-4 py-2 rounded hover:text-white transition">
-                        ← Dashboard
-                    </Link>
+        <div className="admin-container">
+            {/* Header */}
+            <div className="admin-header">
+                <div>
+                    <h1>📝 Question Manager</h1>
+                    <p>Add or edit bilingual PYQs with full hierarchy.</p>
                 </div>
+                <Link href="/admin" className="admin-btn admin-btn-outline">
+                    ← Dashboard
+                </Link>
+            </div>
 
-                {/* Notification */}
-                {notification && (
-                    <div className={`mb-4 p-3 rounded-lg border text-sm font-bold ${notification.type === "error" ? "bg-red-500/10 border-red-500/40 text-red-400" : "bg-green-500/10 border-green-500/40 text-green-400"
-                        }`}>
-                        {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
-                    </div>
-                )}
+            {/* Notification */}
+            {notification && (
+                <div className={`admin-alert ${notification.type}`}>
+                    {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
+                </div>
+            )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="admin-grid-1-3">
+                {/* ── LEFT: FORM ── */}
+                <div className="space-y-4">
+                    <form onSubmit={handleSave} className="admin-card">
+                        <div className="flex-between mb-4">
+                            <h2 className="text-orange" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{isEditing ? "✏️ Edit Question" : "➕ Add New Question"}</h2>
+                            {isEditing && <button type="button" onClick={resetForm} className="admin-btn" style={{ padding: 0, textDecoration: 'underline' }}>Cancel Edit</button>}
+                        </div>
 
-                    {/* ── LEFT: FORM ── */}
-                    <div className="lg:col-span-2 space-y-5">
-                        <form onSubmit={handleSave} className="bg-[#13161E] border border-[#2A2D3A] rounded-xl p-5 md:p-7">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-orange-500">{isEditing ? "✏️ Edit Question" : "➕ Add New Question"}</h2>
-                                {isEditing && <button type="button" onClick={resetForm} className="text-sm text-slate-400 hover:text-white underline">Cancel Edit</button>}
-                            </div>
-
-                            {/* 1. QUESTION CONTENT */}
-                            <div className="bg-[#1A1D27] p-4 rounded-lg border border-[#2A2D3A] mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-[#2A2D3A] pb-2">
-                                    1. Question Content
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Hindi */}
-                                    <div>
-                                        <label className="block text-xs text-orange-400 mb-1 font-bold">Hindi (Optional)</label>
-                                        <textarea name="question_text_hi" value={formData.question_text_hi} onChange={handleChange}
-                                            rows="3" placeholder="Question in Hindi..."
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none focus:border-orange-500" />
-                                        <div className="space-y-2 mt-2">
-                                            {["a", "b", "c", "d"].map(opt => (
-                                                <input key={`hi-${opt}`} type="text" name={`option_${opt}_hi`}
-                                                    value={formData[`option_${opt}_hi`]} onChange={handleChange}
-                                                    placeholder={`Option ${opt.toUpperCase()} (Hindi)`}
-                                                    className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none focus:border-orange-500" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    {/* English */}
-                                    <div>
-                                        <label className="block text-xs text-blue-400 mb-1 font-bold">English (Required)</label>
-                                        <textarea name="question_text_en" value={formData.question_text_en} onChange={handleChange}
-                                            rows="3" required placeholder="Question in English..."
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none focus:border-blue-500" />
-                                        <div className="space-y-2 mt-2">
-                                            {["a", "b", "c", "d"].map(opt => (
-                                                <input key={`en-${opt}`} type="text" name={`option_${opt}_en`}
-                                                    value={formData[`option_${opt}_en`]} onChange={handleChange}
-                                                    required placeholder={`Option ${opt.toUpperCase()} (English)`}
-                                                    className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none focus:border-blue-500" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Answer + Explanation */}
-                                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-xs text-green-400 mb-1 font-bold">Correct Option</label>
-                                        <select name="correct_option" value={formData.correct_option} onChange={handleChange} required
-                                            className="w-full bg-[#0F1117] border border-green-500/50 rounded p-2 text-sm outline-none text-green-400 font-bold">
-                                            <option value="a">A</option><option value="b">B</option>
-                                            <option value="c">C</option><option value="d">D</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-slate-400 mb-1 font-bold">Explanation (Hindi)</label>
-                                        <textarea name="explanation_hi" value={formData.explanation_hi} onChange={handleChange}
-                                            rows="3" placeholder="Explanation in Hindi..."
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-slate-400 mb-1 font-bold">Explanation (English)</label>
-                                        <textarea name="explanation_en" value={formData.explanation_en} onChange={handleChange}
-                                            rows="3" placeholder="Explanation in English..."
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 2. EXAM SESSION — 3 dependent dropdowns */}
-                            <div className="bg-[#1A1D27] p-4 rounded-lg border border-[#2A2D3A] mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-[#2A2D3A] pb-2">
-                                    2. Exam Session (optional)
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {/* Exam */}
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Exam</label>
-                                        <select value={selectedExamId}
-                                            onChange={e => { setSelectedExamId(e.target.value); setSelectedCatId(""); setFormData({ ...formData, exam_session_id: "" }); }}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none">
-                                            <option value="">-- None --</option>
-                                            {exams.map(e => <option key={e.id} value={e.id}>{e.icon} {e.name}</option>)}
-                                        </select>
-                                    </div>
-                                    {/* Category */}
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Category</label>
-                                        <select value={selectedCatId}
-                                            onChange={e => { setSelectedCatId(e.target.value); setFormData({ ...formData, exam_session_id: "" }); }}
-                                            disabled={!selectedExamId}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none disabled:opacity-40">
-                                            <option value="">-- None --</option>
-                                            {filteredCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                        </select>
-                                    </div>
-                                    {/* Session */}
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Session (Year / Date / Shift)</label>
-                                        <select name="exam_session_id" value={formData.exam_session_id} onChange={handleChange}
-                                            disabled={!selectedCatId}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none disabled:opacity-40">
-                                            <option value="">-- None --</option>
-                                            {filteredSessions.map(s => (
-                                                <option key={s.id} value={s.id}>
-                                                    {s.year}{s.exam_date ? ` — ${new Date(s.exam_date).toLocaleDateString('en-IN')}` : ""}{s.shift ? ` (${s.shift})` : ""}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 3. SUBJECT HIERARCHY */}
-                            <div className="bg-[#1A1D27] p-4 rounded-lg border border-[#2A2D3A] mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-[#2A2D3A] pb-2">
-                                    3. Subject Hierarchy (optional)
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Subject</label>
-                                        <select name="subject_id" value={formData.subject_id}
-                                            onChange={e => setFormData({ ...formData, subject_id: e.target.value, topic_id: "", subtopic_id: "" })}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none">
-                                            <option value="">-- None --</option>
-                                            {subjects.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Topic</label>
-                                        <select name="topic_id" value={formData.topic_id}
-                                            onChange={e => setFormData({ ...formData, topic_id: e.target.value, subtopic_id: "" })}
-                                            disabled={!formData.subject_id}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none disabled:opacity-40">
-                                            <option value="">-- None --</option>
-                                            {filteredTopics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-slate-500 mb-1">Subtopic</label>
-                                        <select name="subtopic_id" value={formData.subtopic_id} onChange={handleChange}
-                                            disabled={!formData.topic_id}
-                                            className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none disabled:opacity-40">
-                                            <option value="">-- None --</option>
-                                            {filteredSubtopics.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 4. META */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        {/* 1. QUESTION CONTENT */}
+                        <div className="admin-card mb-4" style={{ backgroundColor: '#13161E' }}>
+                            <h3 className="admin-card-header">1. Question Content</h3>
+                            <div className="admin-grid-cols-2">
+                                {/* Hindi */}
                                 <div>
-                                    <label className="block text-xs text-slate-500 mb-1">Difficulty</label>
-                                    <select name="difficulty" value={formData.difficulty} onChange={handleChange}
-                                        className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none">
-                                        <option value="easy">Easy</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="hard">Hard</option>
+                                    <label className="admin-label text-orange">Hindi (Optional)</label>
+                                    <textarea name="question_text_hi" value={formData.question_text_hi} onChange={handleChange}
+                                        rows="3" placeholder="Question in Hindi..."
+                                        className="admin-input orange mb-4" />
+                                    <div className="space-y-2">
+                                        {["a", "b", "c", "d"].map(opt => (
+                                            <input key={`hi-${opt}`} type="text" name={`option_${opt}_hi`}
+                                                value={formData[`option_${opt}_hi`]} onChange={handleChange}
+                                                placeholder={`Option ${opt.toUpperCase()} (Hindi)`}
+                                                className="admin-input orange" />
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* English */}
+                                <div>
+                                    <label className="admin-label text-blue">English (Required)</label>
+                                    <textarea name="question_text_en" value={formData.question_text_en} onChange={handleChange}
+                                        rows="3" required placeholder="Question in English..."
+                                        className="admin-input blue mb-4" />
+                                    <div className="space-y-2">
+                                        {["a", "b", "c", "d"].map(opt => (
+                                            <input key={`en-${opt}`} type="text" name={`option_${opt}_en`}
+                                                value={formData[`option_${opt}_en`]} onChange={handleChange}
+                                                required placeholder={`Option ${opt.toUpperCase()} (English)`}
+                                                className="admin-input blue" />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Answer + Explanation */}
+                            <div className="admin-grid-cols-3 mt-4">
+                                <div className="admin-form-group">
+                                    <label className="admin-label text-green">Correct Option</label>
+                                    <select name="correct_option" value={formData.correct_option} onChange={handleChange} required
+                                        className="admin-input green" style={{ color: '#4ade80', fontWeight: 'bold' }}>
+                                        <option value="a">A</option><option value="b">B</option>
+                                        <option value="c">C</option><option value="d">D</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-slate-500 mb-1">Custom SEO Slug (leave blank = auto)</label>
-                                    <input type="text" name="slug" value={formData.slug} onChange={handleChange}
-                                        placeholder="e.g. bharat-ka-pratham-pm"
-                                        className="w-full bg-[#0F1117] border border-[#2A2D3A] rounded p-2 text-sm outline-none font-mono text-slate-400" />
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Explanation (Hindi)</label>
+                                    <textarea name="explanation_hi" value={formData.explanation_hi} onChange={handleChange}
+                                        rows="3" placeholder="Explanation in Hindi..."
+                                        className="admin-input" />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Explanation (English)</label>
+                                    <textarea name="explanation_en" value={formData.explanation_en} onChange={handleChange}
+                                        rows="3" placeholder="Explanation in English..."
+                                        className="admin-input" />
                                 </div>
                             </div>
+                        </div>
 
-                            <button type="submit"
-                                className={`w-full font-bold py-3 rounded-lg transition text-white ${isEditing ? "bg-blue-600 hover:bg-blue-500" : "bg-orange-600 hover:bg-orange-500"}`}>
-                                {isEditing ? "Update Question" : "Save New Question"}
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* ── RIGHT: RECENT QUESTIONS ── */}
-                    <div className="bg-[#13161E] border border-[#2A2D3A] rounded-xl p-5 max-h-[90vh] overflow-y-auto sticky top-6">
-                        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-[#2A2D3A] pb-2">
-                            Recent Questions ({questions.length})
-                        </h2>
-                        {loading ? (
-                            <div className="text-center text-sm text-slate-500 py-10">Loading...</div>
-                        ) : (
-                            <div className="space-y-3">
-                                {questions.map(q => (
-                                    <div key={q.id} className="bg-[#1A1D27] p-3 rounded-lg border border-[#2A2D3A]">
-                                        <div className="text-xs text-slate-500 mb-1 flex justify-between flex-wrap gap-1">
-                                            <span className="text-blue-400">
-                                                {q.exam_sessions?.categories?.exams?.name} {q.exam_sessions?.categories?.name} {q.exam_sessions?.year}
-                                            </span>
-                                            <span className="text-green-400 font-bold uppercase">{q.correct_option}</span>
-                                        </div>
-                                        {q.subjects && (
-                                            <div className="text-xs text-orange-400 mb-1">
-                                                {q.subjects?.name}{q.topics ? ` › ${q.topics.name}` : ""}
-                                            </div>
-                                        )}
-                                        <p className="text-sm text-slate-200 line-clamp-2 mb-3 leading-snug">
-                                            {q.question_text_hi || q.question_text_en}
-                                        </p>
-                                        <div className="flex gap-4 border-t border-[#2A2D3A] pt-2">
-                                            <button onClick={() => startEdit(q)} className="text-xs font-bold text-blue-400 hover:text-blue-300">Edit</button>
-                                            <button onClick={() => handleDelete(q.id)} className="text-xs font-bold text-red-400 hover:text-red-300">Delete</button>
-                                        </div>
-                                    </div>
-                                ))}
+                        {/* 2. EXAM SESSION */}
+                        <div className="admin-card mb-4" style={{ backgroundColor: '#13161E' }}>
+                            <h3 className="admin-card-header">2. Exam Session (optional)</h3>
+                            <div className="admin-grid-cols-3">
+                                {/* Exam */}
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Exam</label>
+                                    <select value={selectedExamId}
+                                        onChange={e => { setSelectedExamId(e.target.value); setSelectedCatId(""); setFormData({ ...formData, exam_session_id: "" }); }}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {exams.map(e => <option key={e.id} value={e.id}>{e.icon} {e.name}</option>)}
+                                    </select>
+                                </div>
+                                {/* Category */}
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Category</label>
+                                    <select value={selectedCatId}
+                                        onChange={e => { setSelectedCatId(e.target.value); setFormData({ ...formData, exam_session_id: "" }); }}
+                                        disabled={!selectedExamId}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {filteredCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                                {/* Session */}
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Session (Year / Date / Shift)</label>
+                                    <select name="exam_session_id" value={formData.exam_session_id} onChange={handleChange}
+                                        disabled={!selectedCatId}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {filteredSessions.map(s => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.year}{s.exam_date ? ` — ${new Date(s.exam_date).toLocaleDateString('en-IN')}` : ""}{s.shift ? ` (${s.shift})` : ""}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
 
+                        {/* 3. SUBJECT HIERARCHY */}
+                        <div className="admin-card mb-4" style={{ backgroundColor: '#13161E' }}>
+                            <h3 className="admin-card-header">3. Subject Hierarchy (optional)</h3>
+                            <div className="admin-grid-cols-3">
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Subject</label>
+                                    <select name="subject_id" value={formData.subject_id}
+                                        onChange={e => setFormData({ ...formData, subject_id: e.target.value, topic_id: "", subtopic_id: "" })}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {subjects.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Topic</label>
+                                    <select name="topic_id" value={formData.topic_id}
+                                        onChange={e => setFormData({ ...formData, topic_id: e.target.value, subtopic_id: "" })}
+                                        disabled={!formData.subject_id}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {filteredTopics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="admin-form-group">
+                                    <label className="admin-label">Subtopic</label>
+                                    <select name="subtopic_id" value={formData.subtopic_id} onChange={handleChange}
+                                        disabled={!formData.topic_id}
+                                        className="admin-input">
+                                        <option value="">-- None --</option>
+                                        {filteredSubtopics.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. META */}
+                        <div className="admin-grid-cols-2 mb-4">
+                            <div className="admin-form-group">
+                                <label className="admin-label">Difficulty</label>
+                                <select name="difficulty" value={formData.difficulty} onChange={handleChange}
+                                    className="admin-input">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div className="admin-form-group">
+                                <label className="admin-label">Custom SEO Slug (leave blank = auto)</label>
+                                <input type="text" name="slug" value={formData.slug} onChange={handleChange}
+                                    placeholder="e.g. bharat-ka-pratham-pm"
+                                    className="admin-input" style={{ fontFamily: 'monospace' }} />
+                            </div>
+                        </div>
+
+                        <button type="submit" className={`admin-btn admin-btn-lg ${isEditing ? "admin-btn-blue" : "admin-btn-primary"}`}>
+                            {isEditing ? "Update Question" : "Save New Question"}
+                        </button>
+                    </form>
+                </div>
+
+                {/* ── RIGHT: RECENT QUESTIONS ── */}
+                <div className="admin-card" style={{ maxHeight: '90vh', overflowY: 'auto', position: 'sticky', top: '1.5rem' }}>
+                    <h2 className="admin-card-header">Recent Questions ({questions.length})</h2>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>Loading...</div>
+                    ) : (
+                        <div className="space-y-2">
+                            {questions.map(q => (
+                                <div key={q.id} className="admin-card" style={{ backgroundColor: '#13161E', padding: '0.75rem' }}>
+                                    <div className="flex-between flex-wrap mb-2">
+                                        <span className="text-blue" style={{ fontSize: '0.75rem' }}>
+                                            {q.exam_sessions?.categories?.exams?.name} {q.exam_sessions?.categories?.name} {q.exam_sessions?.year}
+                                        </span>
+                                        <span className="text-green" style={{ fontWeight: 'bold', fontSize: '0.75rem', textTransform: 'uppercase' }}>{q.correct_option}</span>
+                                    </div>
+                                    {q.subjects && (
+                                        <div className="text-orange mb-2" style={{ fontSize: '0.75rem' }}>
+                                            {q.subjects?.name}{q.topics ? ` › ${q.topics.name}` : ""}
+                                        </div>
+                                    )}
+                                    <p style={{ fontSize: '0.875rem', marginBottom: '0.75rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        {q.question_text_hi || q.question_text_en}
+                                    </p>
+                                    <div className="flex-gap-4" style={{ borderTop: '1px solid #2a2d3a', paddingTop: '0.5rem' }}>
+                                        <button onClick={() => startEdit(q)} className="admin-btn" style={{ color: '#60a5fa', padding: 0, fontSize: '0.75rem' }}>Edit</button>
+                                        <button onClick={() => handleDelete(q.id)} className="admin-btn" style={{ color: '#f87171', padding: 0, fontSize: '0.75rem' }}>Delete</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

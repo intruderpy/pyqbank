@@ -32,32 +32,33 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
-          <h1 className="text-2xl font-bold text-white mb-2 text-center">⚙️ Admin Login</h1>
-          <p className="text-slate-400 text-sm text-center mb-8">PYQBank Dashboard</p>
+    <div className="admin-body flex-between" style={{ justifyContent: 'center' }}>
+      <div className="admin-container-sm w-full">
+        <div className="admin-card p-8">
+          <h1 className="text-white text-center mb-2" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>⚙️ Admin Login</h1>
+          <p className="text-muted text-center mb-4">PYQBank Dashboard</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            <div>
+            <div className="admin-form-group">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Admin Password"
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-orange-500 transition"
+                className="admin-input orange"
+                style={{ padding: '0.75rem', fontSize: '1rem' }}
                 autoFocus
               />
             </div>
             {error && (
-              <p className="text-red-400 text-sm font-bold bg-red-500/10 border border-red-500/30 rounded p-2">
+              <div className="admin-alert error">
                 ⚠️ {error}
-              </p>
+              </div>
             )}
             <button
               type="submit"
               disabled={loading || !password}
-              className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition"
+              className="admin-btn admin-btn-primary admin-btn-lg"
             >
               {loading ? "Checking..." : "Login →"}
             </button>

@@ -135,215 +135,224 @@ export default function ExamManagerPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0F1117] text-slate-200 p-4 md:p-6 font-sans">
-            <div className="max-w-5xl mx-auto">
-
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6 border-b border-[#2A2D3A] pb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">🏛️ Exam Manager</h1>
-                        <p className="text-sm text-slate-400 mt-1">Exams → Categories → Sessions (Year / Date / Shift)</p>
-                    </div>
-                    <Link href="/admin" className="text-sm bg-[#1A1D27] border border-[#2A2D3A] px-4 py-2 rounded hover:text-white transition">
-                        ← Dashboard
-                    </Link>
+        <div className="admin-container">
+            {/* Header */}
+            <div className="admin-header">
+                <div>
+                    <h1>🏛️ Exam Manager</h1>
+                    <p>Exams → Categories → Sessions (Year / Date / Shift)</p>
                 </div>
+                <Link href="/admin" className="admin-btn admin-btn-outline">
+                    ← Dashboard
+                </Link>
+            </div>
 
-                {/* Notification */}
-                {notification && (
-                    <div className={`mb-4 p-3 rounded-lg border text-sm font-bold ${notification.type === "error" ? "bg-red-500/10 border-red-500/40 text-red-400" : "bg-green-500/10 border-green-500/40 text-green-400"
-                        }`}>
-                        {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
-                    </div>
-                )}
-
-                {/* Tabs */}
-                <div className="flex gap-2 mb-6 border-b border-[#2A2D3A] pb-0">
-                    {tabs.map(t => (
-                        <button key={t.id} onClick={() => { setActiveTab(t.id); cancelEdit(); }}
-                            className={`px-5 py-2 text-sm font-bold transition-colors border-b-2 ${activeTab === t.id ? "border-blue-500 text-blue-400" : "border-transparent text-slate-400 hover:text-white"
-                                }`}>
-                            {t.label}
-                        </button>
-                    ))}
+            {/* Notification */}
+            {notification && (
+                <div className={`admin-alert ${notification.type}`}>
+                    {notification.type === "error" ? "⚠️ " : "✅ "}{notification.msg}
                 </div>
+            )}
 
-                {/* ── EXAMS TAB ── */}
-                {activeTab === "exams" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addExam} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3">Add New Exam</div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
+            {/* Tabs */}
+            <div className="admin-tabs">
+                {tabs.map(t => (
+                    <button key={t.id} onClick={() => { setActiveTab(t.id); cancelEdit(); }}
+                        className={`admin-tab ${activeTab === t.id ? "active blue" : ""}`}>
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* ── EXAMS TAB ── */}
+            {activeTab === "exams" && (
+                <div className="space-y-4">
+                    <form onSubmit={addExam} className="admin-card">
+                        <div className="admin-card-header">Add New Exam</div>
+                        <div className="admin-grid-cols-4">
+                            <div className="col-span-2">
+                                <input className="admin-input blue"
                                     placeholder="Exam Name (e.g. SSC)" value={newExam.name}
                                     onChange={e => setNewExam({ ...newExam, name: e.target.value })} />
-                                <input className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-blue-500"
-                                    placeholder="Icon emoji (e.g. 🏛️)" value={newExam.icon}
-                                    onChange={e => setNewExam({ ...newExam, icon: e.target.value })} />
-                                <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add Exam</button>
                             </div>
-                            <input className="mt-2 w-full bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none"
-                                placeholder="Description (optional)" value={newExam.description}
-                                onChange={e => setNewExam({ ...newExam, description: e.target.value })} />
-                        </form>
-
-                        <div className="space-y-2">
-                            {exams.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
-                                            <input className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.icon || ""} placeholder="Icon"
-                                                onChange={e => setEditData({ ...editData, icon: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveExamEdit(item.id)} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="mr-2">{item.icon}</span>
-                                                <span className="font-bold text-slate-200">{item.name}</span>
-                                                <span className="ml-2 text-xs text-slate-500 font-mono">/{item.slug}</span>
-                                                {item.description && <p className="text-xs text-slate-500 mt-1">{item.description}</p>}
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("exams", item.id, setExams, exams)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            <input className="admin-input blue"
+                                placeholder="Icon emoji (e.g. 🏛️)" value={newExam.icon}
+                                onChange={e => setNewExam({ ...newExam, icon: e.target.value })} />
+                            <button className="admin-btn admin-btn-blue">Add Exam</button>
                         </div>
-                    </div>
-                )}
+                        <input className="admin-input mt-4"
+                            placeholder="Description (optional)" value={newExam.description}
+                            onChange={e => setNewExam({ ...newExam, description: e.target.value })} />
+                    </form>
 
-                {/* ── CATEGORIES TAB ── */}
-                {activeTab === "categories" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addCategory} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-green-400 uppercase tracking-wider mb-3">Add Category (e.g. CGL under SSC)</div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none text-slate-200"
-                                    value={newCat.exam_id} onChange={e => setNewCat({ ...newCat, exam_id: e.target.value })}>
-                                    <option value="">-- Select Exam --</option>
-                                    {exams.map(e => <option key={e.id} value={e.id}>{e.icon} {e.name}</option>)}
-                                </select>
-                                <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none focus:border-green-500"
+                    <div className="space-y-2">
+                        {exams.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4">
+                                        <div className="col-span-2">
+                                            <input className="admin-input"
+                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                                        </div>
+                                        <input className="admin-input"
+                                            value={editData.icon || ""} placeholder="Icon"
+                                            onChange={e => setEditData({ ...editData, icon: e.target.value })} />
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveExamEdit(item.id)} className="admin-btn admin-btn-green">Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline">Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between">
+                                        <div>
+                                            <span style={{ marginRight: '0.5rem' }}>{item.icon}</span>
+                                            <span style={{ fontWeight: 'bold' }}>{item.name}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>/{item.slug}</span>
+                                            {item.description && <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>{item.description}</p>}
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("exams", item.id, setExams, exams)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── CATEGORIES TAB ── */}
+            {activeTab === "categories" && (
+                <div className="space-y-4">
+                    <form onSubmit={addCategory} className="admin-card">
+                        <div className="admin-card-header text-green" style={{ color: '#4ade80' }}>Add Category (e.g. CGL under SSC)</div>
+                        <div className="admin-grid-cols-4">
+                            <select className="admin-input"
+                                value={newCat.exam_id} onChange={e => setNewCat({ ...newCat, exam_id: e.target.value })}>
+                                <option value="">-- Select Exam --</option>
+                                {exams.map(e => <option key={e.id} value={e.id}>{e.icon} {e.name}</option>)}
+                            </select>
+                            <div className="col-span-2">
+                                <input className="admin-input green"
                                     placeholder="Category name (e.g. CGL, NTPC)" value={newCat.name}
                                     onChange={e => setNewCat({ ...newCat, name: e.target.value })} />
-                                <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add</button>
                             </div>
-                        </form>
-
-                        <div className="space-y-2">
-                            {categories.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none text-slate-200"
-                                                value={editData.exam_id} onChange={e => setEditData({ ...editData, exam_id: e.target.value })}>
-                                                {exams.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                                            </select>
-                                            <input className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveCatEdit(item.id)} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="text-blue-400 text-xs font-bold px-2 py-0.5 bg-blue-500/10 rounded mr-2">
-                                                    {item.exams?.name}
-                                                </span>
-                                                <span className="font-bold text-slate-200">{item.name}</span>
-                                                <span className="ml-2 text-xs text-slate-500 font-mono">/{item.slug}</span>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("categories", item.id, setCategories, categories)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            <button className="admin-btn admin-btn-green">Add</button>
                         </div>
-                    </div>
-                )}
+                    </form>
 
-                {/* ── SESSIONS TAB ── */}
-                {activeTab === "sessions" && (
-                    <div className="space-y-4">
-                        <form onSubmit={addSession} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                            <div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-3">Add Exam Session (Year + Date + Shift)</div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <select className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none text-slate-200"
+                    <div className="space-y-2">
+                        {categories.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4">
+                                        <select className="admin-input"
+                                            value={editData.exam_id} onChange={e => setEditData({ ...editData, exam_id: e.target.value })}>
+                                            {exams.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                                        </select>
+                                        <div className="col-span-2">
+                                            <input className="admin-input"
+                                                value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                                        </div>
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveCatEdit(item.id)} className="admin-btn admin-btn-green">Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline">Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between">
+                                        <div>
+                                            <span className="admin-badge blue">{item.exams?.name}</span>
+                                            <span style={{ fontWeight: 'bold' }}>{item.name}</span>
+                                            <span className="text-muted" style={{ marginLeft: '0.5rem', fontFamily: 'monospace', fontSize: '0.75rem' }}>/{item.slug}</span>
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("categories", item.id, setCategories, categories)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* ── SESSIONS TAB ── */}
+            {activeTab === "sessions" && (
+                <div className="space-y-4">
+                    <form onSubmit={addSession} className="admin-card">
+                        <div className="admin-card-header text-orange" style={{ color: '#fb923c' }}>Add Exam Session (Year + Date + Shift)</div>
+                        <div className="admin-grid-cols-4">
+                            <div className="col-span-2">
+                                <select className="admin-input"
                                     value={newSession.category_id} onChange={e => setNewSession({ ...newSession, category_id: e.target.value })}>
                                     <option value="">-- Select Category --</option>
                                     {categories.map(c => <option key={c.id} value={c.id}>{c.exams?.name} — {c.name}</option>)}
                                 </select>
-                                <input type="number" className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none"
-                                    placeholder="Year" value={newSession.year}
-                                    onChange={e => setNewSession({ ...newSession, year: e.target.value })} />
-                                <select className="bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none text-slate-200"
-                                    value={newSession.shift} onChange={e => setNewSession({ ...newSession, shift: e.target.value })}>
-                                    <option value="">-- Shift (optional) --</option>
-                                    <option value="Morning">Morning</option>
-                                    <option value="Afternoon">Afternoon</option>
-                                    <option value="Evening">Evening</option>
-                                </select>
-                                <input type="date" className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-3 py-2 text-sm outline-none"
-                                    value={newSession.exam_date} onChange={e => setNewSession({ ...newSession, exam_date: e.target.value })} />
-                                <button className="col-span-2 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded font-bold text-sm transition">Add Session</button>
                             </div>
-                        </form>
+                            <input type="number" className="admin-input"
+                                placeholder="Year" value={newSession.year}
+                                onChange={e => setNewSession({ ...newSession, year: e.target.value })} />
+                            <select className="admin-input"
+                                value={newSession.shift} onChange={e => setNewSession({ ...newSession, shift: e.target.value })}>
+                                <option value="">-- Shift (optional) --</option>
+                                <option value="Morning">Morning</option>
+                                <option value="Afternoon">Afternoon</option>
+                                <option value="Evening">Evening</option>
+                            </select>
+                            <div className="col-span-2">
+                                <input type="date" className="admin-input"
+                                    value={newSession.exam_date} onChange={e => setNewSession({ ...newSession, exam_date: e.target.value })} />
+                            </div>
+                            <div className="col-span-2">
+                                <button className="admin-btn admin-btn-primary" style={{ width: '100%' }}>Add Session</button>
+                            </div>
+                        </div>
+                    </form>
 
-                        <div className="space-y-2">
-                            {sessions.map(item => (
-                                <div key={item.id} className="bg-[#1A1D27] p-4 rounded-xl border border-[#2A2D3A]">
-                                    {editingId === item.id ? (
-                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                            <select className="col-span-2 bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none text-slate-200"
+                    <div className="space-y-2">
+                        {sessions.map(item => (
+                            <div key={item.id} className="admin-card">
+                                {editingId === item.id ? (
+                                    <div className="admin-grid-cols-4" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+                                        <div className="col-span-2">
+                                            <select className="admin-input"
                                                 value={editData.category_id} onChange={e => setEditData({ ...editData, category_id: e.target.value })}>
                                                 {categories.map(c => <option key={c.id} value={c.id}>{c.exams?.name} — {c.name}</option>)}
                                             </select>
-                                            <input type="number" className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.year} onChange={e => setEditData({ ...editData, year: e.target.value })} />
-                                            <input type="date" className="bg-[#0F1117] border border-[#2A2D3A] rounded px-2 py-1 text-sm outline-none"
-                                                value={editData.exam_date || ""} onChange={e => setEditData({ ...editData, exam_date: e.target.value })} />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveSessionEdit(item.id)} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold">Save</button>
-                                                <button onClick={cancelEdit} className="text-slate-400 px-3 py-1 text-sm">Cancel</button>
-                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between flex-wrap gap-2">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-blue-400 text-xs font-bold px-2 py-0.5 bg-blue-500/10 rounded">
-                                                    {item.categories?.exams?.name} — {item.categories?.name}
-                                                </span>
-                                                <span className="text-orange-400 font-bold">{item.year}</span>
-                                                {item.exam_date && <span className="text-slate-400 text-xs">{new Date(item.exam_date).toLocaleDateString('en-IN')}</span>}
-                                                {item.shift && <span className="text-green-400 text-xs px-2 py-0.5 bg-green-500/10 rounded">{item.shift}</span>}
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <button onClick={() => startEdit(item)} className="text-blue-400 text-sm hover:text-blue-300">Edit</button>
-                                                <button onClick={() => handleDelete("exam_sessions", item.id, setSessions, sessions)} className="text-red-400 text-sm hover:text-red-300">Delete</button>
-                                            </div>
+                                        <input type="number" className="admin-input"
+                                            value={editData.year} onChange={e => setEditData({ ...editData, year: e.target.value })} />
+                                        <input type="date" className="admin-input"
+                                            value={editData.exam_date || ""} onChange={e => setEditData({ ...editData, exam_date: e.target.value })} />
+                                        <div className="flex-gap-2">
+                                            <button onClick={() => saveSessionEdit(item.id)} className="admin-btn admin-btn-green" style={{ padding: '0.25rem 0.5rem' }}>Save</button>
+                                            <button onClick={cancelEdit} className="admin-btn admin-btn-outline" style={{ padding: '0.25rem 0.5rem' }}>Cancel</button>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-between flex-wrap" style={{ gap: '0.5rem' }}>
+                                        <div className="flex-gap-2 flex-wrap" style={{ alignItems: 'center' }}>
+                                            <span className="admin-badge blue">
+                                                {item.categories?.exams?.name} — {item.categories?.name}
+                                            </span>
+                                            <span className="text-orange" style={{ fontWeight: 'bold' }}>{item.year}</span>
+                                            {item.exam_date && <span className="text-muted" style={{ fontSize: '0.75rem' }}>{new Date(item.exam_date).toLocaleDateString('en-IN')}</span>}
+                                            {item.shift && <span className="admin-badge green">{item.shift}</span>}
+                                        </div>
+                                        <div className="flex-gap-4">
+                                            <button onClick={() => startEdit(item)} className="admin-btn" style={{ color: '#60a5fa', padding: 0 }}>Edit</button>
+                                            <button onClick={() => handleDelete("exam_sessions", item.id, setSessions, sessions)} className="admin-btn" style={{ color: '#f87171', padding: 0 }}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }
