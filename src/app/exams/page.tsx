@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllExams } from "@/lib/queries";
+import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import "@/styles/browse.css";
 
@@ -11,6 +12,19 @@ export const metadata: Metadata = {
 export default async function ExamsPage() {
   const exams = await getAllExams();
 
+  // I3: Fetch question counts per exam
+  const { data: countData } = await supabase
+    .from("questions")
+    .select("exam_sessions!inner(categories!inner(exam_id))");
+  
+  const examCounts: Record<number, number> = {};
+  if (countData) {
+    for (const q of countData as any[]) {
+      const examId = q.exam_sessions?.categories?.exam_id;
+      if (examId) examCounts[examId] = (examCounts[examId] || 0) + 1;
+    }
+  }
+
   const EXAM_META: Record<string, { color: string; tags: string[] }> = {
     ssc:     { color: "#4F46E5", tags: ["CGL", "CHSL", "MTS", "GD", "CPO"] },
     railway: { color: "#7C3AED", tags: ["NTPC", "Group D", "ALP", "JE", "RPF"] },
@@ -20,18 +34,7 @@ export default async function ExamsPage() {
   return (
     <main>
       {/* Navbar */}
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span>
-            <span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link active">Exams</Link>
-            <Link href="/subjects" className="nav-link">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "48px 24px" }}>
         {/* Breadcrumb */}
@@ -65,6 +68,7 @@ export default async function ExamsPage() {
                       <h2 className="browse-card-title">{exam.name}</h2>
                       <p className="browse-card-desc">{exam.description}</p>
                     </div>
+                    <span className="badge badge-primary">{examCounts[exam.id] || 0} Qs</span>
                   </div>
                   <div className="exam-tags" style={{ marginTop: "16px" }}>
                     {meta.tags.map((t) => (

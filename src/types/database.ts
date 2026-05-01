@@ -104,6 +104,7 @@ export type Database = {
           explanation_en: string | null;
           explanation_hi: string | null;
           difficulty: "easy" | "medium" | "hard" | null;
+          image_url: string | null;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["questions"]["Row"], "id" | "created_at">;

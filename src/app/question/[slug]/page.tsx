@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { SITE_URL } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 import { getQuestionBySlug } from "@/lib/queries";
 import Breadcrumb from "@/components/Breadcrumb";
+import QuestionActions from "@/components/questions/QuestionActions";
 import "@/styles/questions.css";
 import "@/styles/browse.css";
 
@@ -96,13 +98,34 @@ export default async function QuestionPage({ params }: Props) {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <a href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </a>
-        </div>
-      </nav>
+      {/* CreativeWork JSON-LD Schema (D12) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            name: question.question_text_en?.substring(0, 100) || "PYQ Question",
+            description: question.explanation_en || question.question_text_en,
+            inLanguage: ["en", "hi"],
+            educationalLevel: question.difficulty || "Intermediate",
+            learningResourceType: "Practice Question",
+            isAccessibleForFree: true,
+            url: `${SITE_URL}/question/${question.slug}`,
+            publisher: {
+              "@type": "Organization",
+              name: "PYQBank",
+              url: SITE_URL,
+            },
+            ...(question.exam_sessions?.categories?.exams?.name && {
+              about: {
+                "@type": "Thing",
+                name: `${question.exam_sessions.categories.exams.name} ${question.exam_sessions.categories.name} ${question.exam_sessions.year}`,
+              },
+            }),
+          }),
+        }}
+      />
 
       <div className="container" style={{ padding: "32px 24px", maxWidth: "800px" }}>
         <Breadcrumb items={breadcrumbItems} />
@@ -171,6 +194,10 @@ export default async function QuestionPage({ params }: Props) {
               )}
             </div>
           )}
+          
+          <div style={{ marginTop: "24px", paddingTop: "16px", borderTop: "1px solid var(--border-subtle)" }}>
+            <QuestionActions questionId={question.id} slug={question.slug} />
+          </div>
         </div>
       </div>
     </main>

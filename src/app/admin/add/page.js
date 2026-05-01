@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { generateSlug } from "@/lib/utils";
 import Link from "next/link";
 
 const INITIAL_FORM = {
@@ -31,9 +32,7 @@ export default function QuestionManagerPage() {
     const [selectedExamId, setSelectedExamId] = useState("");
     const [selectedCatId, setSelectedCatId] = useState("");
 
-    useEffect(() => { fetchLookups(); fetchQuestions(); }, []);
-
-    const fetchLookups = async () => {
+    const fetchLookups = useCallback(async () => {
         const [exRes, catRes, sesRes, subRes, topRes, stRes] = await Promise.all([
             supabase.from("exams").select("*").order("name"),
             supabase.from("categories").select("*").order("name"),
@@ -48,9 +47,9 @@ export default function QuestionManagerPage() {
         if (subRes.data) setSubjects(subRes.data);
         if (topRes.data) setTopics(topRes.data);
         if (stRes.data) setSubtopics(stRes.data);
-    };
+    }, []);
 
-    const fetchQuestions = async () => {
+    const fetchQuestions = useCallback(async () => {
         setLoading(true);
         const { data } = await supabase
             .from("questions")
@@ -59,7 +58,11 @@ export default function QuestionManagerPage() {
             .limit(50);
         if (data) setQuestions(data);
         setLoading(false);
-    };
+    }, []);
+
+    useEffect(() => { fetchLookups(); fetchQuestions(); }, [fetchLookups, fetchQuestions]);
+
+
 
     const notify = (type, msg) => {
         setNotification({ type, msg });
@@ -80,9 +83,7 @@ export default function QuestionManagerPage() {
         if (!formData.option_a_en || !formData.option_b_en || !formData.option_c_en || !formData.option_d_en)
             return notify("error", "All 4 English options are required!");
 
-        const autoSlug = (formData.question_text_hi || formData.question_text_en)
-            .toLowerCase().replace(/[^a-z0-9\u0900-\u097f]+/gi, '-').replace(/(^-|-$)/g, '').substring(0, 60)
-            + '-' + Date.now().toString().slice(-5);
+        const autoSlug = generateSlug(formData.question_text_hi || formData.question_text_en);
         const payload = {
             slug: formData.slug || autoSlug,
             question_text_en: formData.question_text_en.trim(),
@@ -104,6 +105,7 @@ export default function QuestionManagerPage() {
         if (isEditing) {
             const res = await fetch('/api/admin/mutate', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'update', table: 'questions', payload, match: { id: formData.id } })
             });
             const { error } = await res.json();
@@ -112,6 +114,7 @@ export default function QuestionManagerPage() {
         } else {
             const res = await fetch('/api/admin/mutate', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'insert', table: 'questions', payload: [payload] })
             });
             const { data, error } = await res.json();
@@ -146,6 +149,7 @@ export default function QuestionManagerPage() {
         if (!window.confirm("Delete this question permanently?")) return;
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete', table: 'questions', match: { id } })
         });
         const { error } = await res.json();

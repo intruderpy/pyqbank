@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
@@ -17,9 +17,7 @@ export default function SubjectManagerPage() {
     const [newTopic, setNewTopic] = useState({ subject_id: "", name: "", slug: "" });
     const [newSubtopic, setNewSubtopic] = useState({ topic_id: "", name: "", slug: "" });
 
-    useEffect(() => { fetchAll(); }, []);
-
-    const fetchAll = async () => {
+    const fetchAll = useCallback(async () => {
         setLoading(true);
         const [subRes, topRes, stRes] = await Promise.all([
             supabase.from("subjects").select("*").order("name"),
@@ -30,7 +28,11 @@ export default function SubjectManagerPage() {
         if (topRes.data) setTopics(topRes.data);
         if (stRes.data) setSubtopics(stRes.data);
         setLoading(false);
-    };
+    }, []);
+
+    useEffect(() => { fetchAll(); }, [fetchAll]);
+
+
 
     const notify = (type, msg) => {
         setNotification({ type, msg });
@@ -47,6 +49,7 @@ export default function SubjectManagerPage() {
         const payload = { name: newSubject.name.trim(), slug: newSubject.slug || makeSlug(newSubject.name), icon: newSubject.icon || null };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'subjects', payload: [payload] })
         });
         const { data, error } = await res.json();
@@ -63,6 +66,7 @@ export default function SubjectManagerPage() {
         const payload = { subject_id: parseInt(newTopic.subject_id), name: newTopic.name.trim(), slug: newTopic.slug || makeSlug(newTopic.name) };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'topics', payload: [payload], select: '*, subjects(name)' })
         });
         const { data, error } = await res.json();
@@ -79,6 +83,7 @@ export default function SubjectManagerPage() {
         const payload = { topic_id: parseInt(newSubtopic.topic_id), name: newSubtopic.name.trim(), slug: newSubtopic.slug || makeSlug(newSubtopic.name) };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'subtopics', payload: [payload], select: '*, topics(name, subjects(name))' })
         });
         const { data, error } = await res.json();
@@ -97,6 +102,7 @@ export default function SubjectManagerPage() {
         const finalPayload = { ...payload, slug: payload.slug || makeSlug(payload.name) };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', table, payload: finalPayload, match: { id } })
         });
         const { error } = await res.json();
@@ -110,6 +116,7 @@ export default function SubjectManagerPage() {
         if (!window.confirm("Delete? Child items (topics/subtopics/questions links) may be affected.")) return;
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete', table, match: { id } })
         });
         const { error } = await res.json();

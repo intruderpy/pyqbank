@@ -23,17 +23,7 @@ export default async function ExamPage({ params }: Props) {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link active">Exams</Link>
-            <Link href="/subjects" className="nav-link">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "48px 24px" }}>
         <div className="breadcrumb">

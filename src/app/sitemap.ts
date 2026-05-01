@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { supabase } from '@/lib/supabase'
 import { SITE_URL } from '@/lib/config'
+import type { Exam, Category, ExamSession, Subject, Topic, Subtopic } from '@/types/database'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
@@ -25,13 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Fetch Exams & Categories & Sessions (Dates & Shifts)
   const { data: examsData } = await supabase.from('exams').select('*');
-  const exams = examsData as any[] | null;
+  const exams = examsData as Exam[] | null;
 
   const { data: allCatsData } = await supabase.from('categories').select('*');
-  const allCats = allCatsData as any[] | null;
+  const allCats = allCatsData as Category[] | null;
 
   const { data: sessionsData } = await supabase.from('exam_sessions').select('*');
-  const sessions = sessionsData as any[] | null;
+  const sessions = sessionsData as ExamSession[] | null;
 
   if (exams && allCats && sessions) {
     const examMap = new Map(exams.map(e => [e.id, e.slug]));
@@ -78,13 +79,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 3. Fetch Subjects & Topics & Subtopics
   const { data: subjectsData } = await supabase.from('subjects').select('*');
-  const subjects = subjectsData as any[] | null;
+  const subjects = subjectsData as Subject[] | null;
 
   const { data: topicsData } = await supabase.from('topics').select('*');
-  const topics = topicsData as any[] | null;
+  const topics = topicsData as Topic[] | null;
 
   const { data: subtopicsData } = await supabase.from('subtopics').select('*');
-  const subtopics = subtopicsData as any[] | null;
+  const subtopics = subtopicsData as Subtopic[] | null;
 
   if (subjects && topics) {
     const subjectMap = new Map(subjects.map(s => [s.id, s.slug]));

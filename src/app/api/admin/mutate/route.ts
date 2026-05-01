@@ -5,7 +5,10 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Verify Admin Authentication
     const authCookie = request.cookies.get('admin_auth')?.value;
-    const ADMIN_SECRET = process.env.ADMIN_SECRET || 'pyqbank_admin_2025';
+    const ADMIN_SECRET = process.env.ADMIN_SECRET;
+  if (!ADMIN_SECRET) {
+      return NextResponse.json({ error: 'Server configuration error: ADMIN_SECRET is not set' }, { status: 500 });
+  }
 
     if (authCookie !== ADMIN_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -5,6 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: ['/api/', '/admin/', '/admin-login'],
     },
     sitemap: 'https://pyqbank.vercel.app/sitemap.xml',
   }

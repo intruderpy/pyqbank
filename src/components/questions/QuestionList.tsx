@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Question } from "@/types/database";
+import { useLanguage } from "@/context/LanguageContext";
+import QuestionActions from "./QuestionActions";
 import "@/styles/questions.css";
 
-type Mode = "qa" | "mcq";
+type Mode = "qa" | "mcq" | "mock";
 type Lang = "en" | "hi";
 
 interface Props {
@@ -13,13 +15,59 @@ interface Props {
   onLoadMore: () => void;
   hasMore: boolean;
   loading: boolean;
-  hideLangToggle?: boolean;
+  hideLangToggle?: boolean; // kept for backwards compatibility but unused
 }
 
-export default function QuestionList({ questions, sessionLabel, onLoadMore, hasMore, loading, hideLangToggle }: Props) {
+export default function QuestionList({ questions, sessionLabel, onLoadMore, hasMore, loading }: Props) {
   const [mode, setMode] = useState<Mode>("qa");
-  const [lang, setLang] = useState<Lang>("en");
+  const { lang } = useLanguage();
   const [score, setScore] = useState({ correct: 0, attempted: 0 });
+  const [mockIndex, setMockIndex] = useState(0);
+  const [mockStarted, setMockStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+
+  // I9: Filter questions by difficulty
+  const filteredQuestions = difficultyFilter === "all"
+    ? questions
+    : questions.filter((q) => q.difficulty === difficultyFilter);
+
+  // Timer logic
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (mode === "mock" && mockStarted && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            // Auto submit or finish logic here
+            setMockStarted(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [mode, mockStarted, timeLeft]);
+
+  const startMockTest = (minutes: number) => {
+    setScore({ correct: 0, attempted: 0 });
+    setMockIndex(0);
+    setTimeLeft(minutes * 60);
+    setMockStarted(true);
+  };
+
+  // I13: Keyboard shortcuts for mock test mode
+  useEffect(() => {
+    if (mode !== "mock" || !mockStarted) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") setMockIndex(p => Math.min(filteredQuestions.length - 1, p + 1));
+      if (e.key === "ArrowLeft") setMockIndex(p => Math.max(0, p - 1));
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [mode, mockStarted, filteredQuestions.length]);
 
   return (
     <div className="questions-wrapper">
@@ -27,72 +75,133 @@ export default function QuestionList({ questions, sessionLabel, onLoadMore, hasM
       <div className="controls-bar">
         <div className="controls-left">
           <span className="session-label">{sessionLabel}</span>
-          <span className="badge badge-primary">{questions.length} Questions</span>
+          <span className="badge badge-primary">{filteredQuestions.length} Questions</span>
         </div>
         <div className="controls-right">
-          {/* Language Toggle */}
-          {!hideLangToggle && (
-            <div className="toggle-group">
-              <button
-                id="lang-en-btn"
-                className={`toggle-btn ${lang === "en" ? "active" : ""}`}
-                onClick={() => setLang("en")}
-              >EN</button>
-              <button
-                id="lang-hi-btn"
-                className={`toggle-btn ${lang === "hi" ? "active" : ""}`}
-                onClick={() => setLang("hi")}
-              >हिं</button>
-            </div>
-          )}
+          {/* I9: Difficulty Filter */}
+          <select
+            className="toggle-btn"
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+            style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-md)", padding: "6px 10px", fontSize: "0.8rem", cursor: "pointer" }}
+          >
+            <option value="all">All Levels</option>
+            <option value="easy">🟢 Easy</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="hard">🔴 Hard</option>
+          </select>
           {/* Mode Toggle */}
           <div className="toggle-group">
             <button
-              id="mode-qa-btn"
               className={`toggle-btn ${mode === "qa" ? "active" : ""}`}
               onClick={() => setMode("qa")}
-            >📖 Q&amp;A</button>
+            >📖 Study</button>
             <button
-              id="mode-mcq-btn"
               className={`toggle-btn ${mode === "mcq" ? "active" : ""}`}
-              onClick={() => { setMode("mcq"); setScore({ correct: 0, attempted: 0 }); }}
-            >🎯 Quiz</button>
+              onClick={() => setMode("mcq")}
+            >🎯 Practice</button>
+            <button
+              className={`toggle-btn ${mode === "mock" ? "active" : ""}`}
+              onClick={() => setMode("mock")}
+            >⏱️ Mock Test</button>
           </div>
         </div>
       </div>
 
       {/* MCQ Score Bar */}
-      {mode === "mcq" && (
-        <div className="score-bar">
-          <span>Score: <strong className="gradient-text">{score.correct}</strong> / {score.attempted}</span>
-          {score.attempted > 0 && (
-            <span className={`badge ${
-              (score.correct / score.attempted) >= 0.7 ? "badge-success" : "badge-warning"
-            }`}>
-              {Math.round((score.correct / score.attempted) * 100)}% Accuracy
-            </span>
+      {(mode === "mcq" || (mode === "mock" && mockStarted)) && (
+        <div className="score-bar" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div>
+            <span>Score: <strong className="gradient-text">{score.correct}</strong> / {score.attempted}</span>
+            {score.attempted > 0 && (
+              <span className={`badge ${
+                (score.correct / score.attempted) >= 0.7 ? "badge-success" : "badge-warning"
+              }`} style={{ marginLeft: "12px" }}>
+                {Math.round((score.correct / score.attempted) * 100)}% Accuracy
+              </span>
+            )}
+          </div>
+          {mode === "mock" && timeLeft > 0 && (
+            <div style={{ color: timeLeft < 60 ? "var(--error)" : "var(--brand-primary)", fontWeight: "bold" }}>
+              ⏳ {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
+            </div>
           )}
         </div>
       )}
 
       {/* ── Question Cards ─────────────────────────────────── */}
       <div className="question-list">
-        {questions.map((q, index) =>
-          mode === "qa" ? (
-            <QACard key={q.id} question={q} index={index} lang={lang} />
+        {mode === "mock" ? (
+          !mockStarted ? (
+            <div className="card" style={{ padding: "40px", textAlign: "center" }}>
+              <h2>Start Mock Test</h2>
+              <p style={{ color: "var(--text-secondary)", marginBottom: "24px" }}>
+                Practice {filteredQuestions.length} questions in exam-like conditions.
+              </p>
+              <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button className="btn btn-outline" onClick={() => startMockTest(0)}>No Timer</button>
+                <button className="btn btn-primary" onClick={() => startMockTest(10)}>10 Mins</button>
+                <button className="btn btn-primary" onClick={() => startMockTest(20)}>20 Mins</button>
+              </div>
+            </div>
           ) : (
-            <MCQCard
-              key={q.id}
-              question={q}
-              index={index}
-              lang={lang}
-              onAnswer={(isCorrect) =>
-                setScore((prev) => ({
-                  correct: prev.correct + (isCorrect ? 1 : 0),
-                  attempted: prev.attempted + 1,
-                }))
-              }
-            />
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                <span>Question {mockIndex + 1} of {filteredQuestions.length}</span>
+                <span style={{ cursor: "pointer", color: "var(--error)" }} onClick={() => setMockStarted(false)}>End Test</span>
+              </div>
+              <MCQCard
+                key={filteredQuestions[mockIndex]?.id}
+                question={filteredQuestions[mockIndex]}
+                index={mockIndex}
+                lang={lang}
+                onAnswer={(isCorrect) =>
+                  setScore((prev) => ({
+                    correct: prev.correct + (isCorrect ? 1 : 0),
+                    attempted: prev.attempted + 1,
+                  }))
+                }
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "24px" }}>
+                <button 
+                  className="btn btn-outline" 
+                  onClick={() => setMockIndex(p => Math.max(0, p - 1))}
+                  disabled={mockIndex === 0}
+                >← Previous</button>
+                
+                {mockIndex < filteredQuestions.length - 1 ? (
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => setMockIndex(p => Math.min(filteredQuestions.length - 1, p + 1))}
+                  >Next →</button>
+                ) : (
+                  hasMore ? (
+                    <button className="btn btn-primary" onClick={onLoadMore} disabled={loading}>Load More ↓</button>
+                  ) : (
+                    <button className="btn btn-outline" onClick={() => setMockStarted(false)}>Finish Review</button>
+                  )
+                )}
+              </div>
+            </div>
+          )
+        ) : (
+          filteredQuestions.map((q, index) =>
+            mode === "qa" ? (
+              <QACard key={q.id} question={q} index={index} lang={lang} />
+            ) : (
+              <MCQCard
+                key={q.id}
+                question={q}
+                index={index}
+                lang={lang}
+                onAnswer={(isCorrect) =>
+                  setScore((prev) => ({
+                    correct: prev.correct + (isCorrect ? 1 : 0),
+                    attempted: prev.attempted + 1,
+                  }))
+                }
+              />
+            )
           )
         )}
       </div>
@@ -110,10 +219,26 @@ export default function QuestionList({ questions, sessionLabel, onLoadMore, hasM
           </button>
         </div>
       )}
-      {!hasMore && questions.length > 0 && (
-        <p style={{ textAlign: "center", marginTop: "32px", color: "var(--text-muted)" }}>
-          ✅ All questions loaded
-        </p>
+      {/* I15: Session Summary */}
+      {!hasMore && filteredQuestions.length > 0 && score.attempted > 0 && (
+        <div className="card" style={{ marginTop: "32px", padding: "24px", textAlign: "center" }}>
+          <h3 style={{ marginBottom: "16px" }}>📊 Session Summary</h3>
+          <div style={{ display: "flex", gap: "24px", justifyContent: "center", flexWrap: "wrap" }}>
+            <div><span style={{ fontSize: "1.5rem", fontWeight: 800 }} className="gradient-text">{score.attempted}</span><br /><span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Attempted</span></div>
+            <div><span style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--success)" }}>{score.correct}</span><br /><span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Correct</span></div>
+            <div><span style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--error)" }}>{score.attempted - score.correct}</span><br /><span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Wrong</span></div>
+            <div><span style={{ fontSize: "1.5rem", fontWeight: 800 }} className="gradient-text">{score.attempted > 0 ? Math.round((score.correct / score.attempted) * 100) : 0}%</span><br /><span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Accuracy</span></div>
+          </div>
+        </div>
+      )}
+
+      {/* I8: Print Button */}
+      {filteredQuestions.length > 0 && (
+        <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <button className="btn btn-outline btn-sm" onClick={() => window.print()} style={{ opacity: 0.7 }}>
+            🖨️ Print Questions
+          </button>
+        </div>
       )}
     </div>
   );
@@ -138,6 +263,9 @@ function QACard({ question: q, index, lang }: { question: Question; index: numbe
     <div className="question-card card animate-fade-in" lang={lang === "hi" ? "hi" : "en"}>
       <div className="question-number">Q.{index + 1}</div>
       <p className="question-text">{text}</p>
+      {q.image_url && (
+        <img src={q.image_url} alt={`Question ${index + 1} diagram`} style={{ maxWidth: "100%", borderRadius: "8px", marginTop: "12px", marginBottom: "12px" }} loading="lazy" />
+      )}
 
       {!revealed ? (
         <button
@@ -171,13 +299,13 @@ function QACard({ question: q, index, lang }: { question: Question; index: numbe
           )}
         </div>
       )}
+      <QuestionActions questionId={q.id} slug={q.slug} />
     </div>
   );
 }
 
 // ── MCQ Card ────────────────────────────────────────────────
 
-const OPTION_LABELS = ["a", "b", "c", "d"] as const;
 const OPTION_CLASSES = ["opt-a", "opt-b", "opt-c", "opt-d"];
 
 function MCQCard({
@@ -244,6 +372,7 @@ function MCQCard({
           <p>{explanation}</p>
         </div>
       )}
+      <QuestionActions questionId={q.id} slug={q.slug} />
     </div>
   );
 }

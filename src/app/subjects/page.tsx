@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllSubjects } from "@/lib/queries";
+import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import "@/styles/browse.css";
 
@@ -11,19 +12,23 @@ export const metadata: Metadata = {
 export default async function SubjectsPage() {
   const subjects = await getAllSubjects();
 
+  // I3: Fetch question counts per subject
+  const { data: countData } = await supabase
+    .from("questions")
+    .select("subject_id")
+    .not("subject_id", "is", null);
+  
+  const subjectCounts: Record<number, number> = {};
+  if (countData) {
+    for (const q of countData) {
+      const sid = q.subject_id as number;
+      if (sid) subjectCounts[sid] = (subjectCounts[sid] || 0) + 1;
+    }
+  }
+
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link">Exams</Link>
-            <Link href="/subjects" className="nav-link active">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "48px 24px" }}>
         <div className="breadcrumb">
@@ -42,6 +47,7 @@ export default async function SubjectsPage() {
             <Link key={subject.id} href={`/subjects/${subject.slug}`} className="browse-card card" style={{ textAlign: "center" }}>
               <span style={{ fontSize: "3rem", display: "block" }}>{subject.icon ?? "📚"}</span>
               <h3 className="browse-card-title" style={{ marginTop: "12px" }}>{subject.name}</h3>
+              <span className="badge badge-primary" style={{ marginTop: "8px" }}>{subjectCounts[subject.id] || 0} Questions</span>
               <div className="browse-card-footer">
                 <span className="btn btn-outline btn-sm">Browse Topics →</span>
               </div>

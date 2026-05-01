@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { LanguageProvider } from "@/context/LanguageContext";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -43,7 +45,7 @@ export default function RootLayout({
     description: "Practice PYQ for SSC, Railway, Banking exams.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://pyqbank.vercel.app/exams?q={search_term_string}",
+      target: "https://pyqbank.vercel.app/search?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };
@@ -51,7 +53,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <LanguageProvider>
+          <Navbar />
+          {children}
+        </LanguageProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

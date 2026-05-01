@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
@@ -18,9 +18,7 @@ export default function ExamManagerPage() {
     const [newCat, setNewCat] = useState({ exam_id: "", name: "", slug: "" });
     const [newSession, setNewSession] = useState({ category_id: "", year: new Date().getFullYear(), exam_date: "", shift: "" });
 
-    useEffect(() => { fetchAll(); }, []);
-
-    const fetchAll = async () => {
+    const fetchAll = useCallback(async () => {
         setLoading(true);
         const [exRes, catRes, sesRes] = await Promise.all([
             supabase.from("exams").select("*").order("name"),
@@ -31,7 +29,11 @@ export default function ExamManagerPage() {
         if (catRes.data) setCategories(catRes.data);
         if (sesRes.data) setSessions(sesRes.data);
         setLoading(false);
-    };
+    }, []);
+
+    useEffect(() => { fetchAll(); }, [fetchAll]);
+
+
 
     const notify = (type, msg) => {
         setNotification({ type, msg });
@@ -48,6 +50,7 @@ export default function ExamManagerPage() {
         const payload = { ...newExam, name: newExam.name.trim(), slug: newExam.slug || slug(newExam.name) };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'exams', payload: [payload] })
         });
         const { data, error } = await res.json();
@@ -64,6 +67,7 @@ export default function ExamManagerPage() {
         const payload = { exam_id: newCat.exam_id, name: newCat.name.trim(), slug: newCat.slug || slug(newCat.name) };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'categories', payload: [payload], select: '*, exams(name)' })
         });
         const { data, error } = await res.json();
@@ -85,6 +89,7 @@ export default function ExamManagerPage() {
         };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'insert', table: 'exam_sessions', payload: [payload], select: '*, categories(name, exams(name))' })
         });
         const { data, error } = await res.json();
@@ -106,6 +111,7 @@ export default function ExamManagerPage() {
         };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', table: 'exams', payload, match: { id } })
         });
         const { error } = await res.json();
@@ -120,6 +126,7 @@ export default function ExamManagerPage() {
         };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', table: 'categories', payload, match: { id } })
         });
         const { error } = await res.json();
@@ -137,6 +144,7 @@ export default function ExamManagerPage() {
         };
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', table: 'exam_sessions', payload, match: { id } })
         });
         const { error } = await res.json();
@@ -149,6 +157,7 @@ export default function ExamManagerPage() {
         if (!window.confirm("Delete? Related questions may be affected.")) return;
         const res = await fetch('/api/admin/mutate', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete', table, match: { id } })
         });
         const { error } = await res.json();

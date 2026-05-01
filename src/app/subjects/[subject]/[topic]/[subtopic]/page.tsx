@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getSubjectBySlug, getTopicsBySubject, getSubtopicBySlug, getQuestionsByTopicAdvanced } from "@/lib/queries";
 import Breadcrumb from "@/components/Breadcrumb";
 import SubtopicClientView from "./SubtopicClientView";
@@ -34,17 +35,7 @@ export default async function SubtopicPage({ params }: Props) {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <a href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </a>
-          <div className="navbar-links">
-            <a href="/exams" className="nav-link">Exams</a>
-            <a href="/subjects" className="nav-link active">Subjects</a>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "32px 24px" }}>
         <Breadcrumb items={breadcrumbs} />

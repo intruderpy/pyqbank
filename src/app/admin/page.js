@@ -1,12 +1,12 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import Link from 'next/link'
 
 export const metadata = { title: 'Admin Dashboard | PYQBank' }
 
 export default async function AdminDashboard() {
-    const { count: qCount } = await supabase.from('questions').select('*', { count: 'exact', head: true })
-    const { count: eCount } = await supabase.from('exams').select('*', { count: 'exact', head: true })
-    const { count: sCount } = await supabase.from('subjects').select('*', { count: 'exact', head: true })
+    const { count: qCount } = await supabaseAdmin.from('questions').select('*', { count: 'exact', head: true })
+    const { count: eCount } = await supabaseAdmin.from('exams').select('*', { count: 'exact', head: true })
+    const { count: sCount } = await supabaseAdmin.from('subjects').select('*', { count: 'exact', head: true })
 
     return (
         <div className="admin-container">

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Metadata } from "next";
 import { supabase } from "@/lib/supabase";
 import { getExamBySlug, getCategoryBySlug, getQuestionsByAdvancedFilter } from "@/lib/queries";
@@ -70,13 +71,7 @@ export default async function DatePage({ params }: Props) {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <a href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </a>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "32px 24px" }}>
         <Breadcrumb items={breadcrumbs} />

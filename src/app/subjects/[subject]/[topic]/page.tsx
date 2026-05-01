@@ -61,6 +61,7 @@ export default function TopicQuestionsPage() {
 
   const loadQuestions = useCallback(
     async (pageNum: number) => {
+      if (pageNum === 0) setPage(0);
       if (!topic) return;
       setLoading(true);
       try {
@@ -86,8 +87,7 @@ export default function TopicQuestionsPage() {
   // Trigger reload when topic or filters change
   useEffect(() => {
     if (topic) {
-      setPage(0);
-      loadQuestions(0);
+      setTimeout(() => loadQuestions(0), 0);
     }
   }, [topic, selectedSubtopic, loadQuestions]);
 
@@ -99,17 +99,7 @@ export default function TopicQuestionsPage() {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link">Exams</Link>
-            <Link href="/subjects" className="nav-link active">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "32px 24px" }}>
         <div className="breadcrumb">

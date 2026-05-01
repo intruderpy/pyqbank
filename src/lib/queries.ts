@@ -9,7 +9,7 @@ export async function getAllExams(): Promise<Exam[]> {
     .select("*, categories!inner(exam_sessions!inner(questions!inner(id)))")
     .order("name");
   if (error) throw error;
-  return (data as any[])?.map(({ categories, ...rest }) => rest as Exam) ?? [];
+  return (data as (Exam & { categories: any[] })[])?.map(({ categories: _, ...rest }) => rest as Exam) ?? [];
 }
 
 export async function getExamBySlug(slug: string): Promise<Exam | null> {
@@ -27,7 +27,7 @@ export async function getCategoriesByExam(examId: number): Promise<Category[]> {
     .eq("exam_id", examId)
     .order("name");
   if (error) throw error;
-  return (data as any[])?.map(({ exam_sessions, ...rest }) => rest as Category) ?? [];
+  return (data as (Category & { exam_sessions: any[] })[])?.map(({ exam_sessions: _, ...rest }) => rest as Category) ?? [];
 }
 
 export async function getCategoryBySlug(examId: number, slug: string): Promise<Category | null> {
@@ -67,7 +67,7 @@ export async function getAllSubjects(): Promise<Subject[]> {
     .select("*, questions!inner(id)")
     .order("name");
   if (error) throw error;
-  return (data as any[])?.map(({ questions, ...rest }) => rest as Subject) ?? [];
+  return (data as (Subject & { questions: any[] })[])?.map(({ questions: _, ...rest }) => rest as Subject) ?? [];
 }
 
 export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
@@ -85,7 +85,7 @@ export async function getTopicsBySubject(subjectId: number): Promise<Topic[]> {
     .eq("subject_id", subjectId)
     .order("name");
   if (error) throw error;
-  return (data as any[])?.map(({ questions, ...rest }) => rest as Topic) ?? [];
+  return (data as (Topic & { questions: any[] })[])?.map(({ questions: _, ...rest }) => rest as Topic) ?? [];
 }
 
 export async function getSubtopicsByTopic(topicId: number): Promise<Subtopic[]> {
@@ -128,8 +128,8 @@ export async function getQuestionsByAdvancedFilter(
   if (error) throw error;
   
   // Clean up the joined property to match Question type if needed
-  return (data as any[])?.map(q => {
-    const { exam_sessions, ...rest } = q;
+  return (data as (Question & { exam_sessions: any })[])?.map(q => {
+    const { exam_sessions: _, ...rest } = q;
     return rest as Question;
   }) ?? [];
 }
@@ -170,7 +170,10 @@ export async function getQuestionsBySubject(
   return data ?? [];
 }
 
-export async function getQuestionBySlug(slug: string): Promise<any | null> {
+export async function getQuestionBySlug(slug: string): Promise<(Question & { 
+  topics: (Topic & { subjects: Subject | null }) | null,
+  exam_sessions: (ExamSession & { categories: (Category & { exams: Exam | null }) | null }) | null
+}) | null> {
   const { data, error } = await supabase
     .from("questions")
     .select(`

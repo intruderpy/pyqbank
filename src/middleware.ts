@@ -5,7 +5,8 @@ export function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/admin')) {
     const auth = request.cookies.get('admin_auth')?.value;
-    const ADMIN_SECRET = process.env.ADMIN_SECRET || 'pyqbank_admin_2025';
+    const ADMIN_SECRET = process.env.ADMIN_SECRET;
+  if (!ADMIN_SECRET) return NextResponse.redirect(new URL('/', request.url));
 
     if (auth !== ADMIN_SECRET) {
       // Redirect to login page

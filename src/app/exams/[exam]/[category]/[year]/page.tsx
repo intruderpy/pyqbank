@@ -87,10 +87,9 @@ export default function YearQuestionsPage() {
       const shiftsForDate = allSessions
         .filter((s) => s.exam_date === selectedDate && s.shift)
         .map((s) => s.shift as string);
-      setAvailableShifts(Array.from(new Set(shiftsForDate)));
+      setTimeout(() => setAvailableShifts(Array.from(new Set(shiftsForDate))), 0);
     } else {
-      setAvailableShifts([]);
-      setSelectedShift(null); // Clear shift if date is cleared
+      setTimeout(() => setAvailableShifts([]), 0);
     }
   }, [selectedDate, allSessions]);
 
@@ -98,6 +97,10 @@ export default function YearQuestionsPage() {
   const loadQuestions = useCallback(
     async (pageNum: number) => {
       if (!category) return;
+      if (pageNum === 0) {
+        setPage(0);
+        setSelectedShift(null);
+      }
       setLoading(true);
       try {
         const rows = await getQuestionsByAdvancedFilter(
@@ -125,8 +128,7 @@ export default function YearQuestionsPage() {
   // Trigger reload when filters change
   useEffect(() => {
     if (category) {
-      setPage(0);
-      loadQuestions(0);
+      setTimeout(() => loadQuestions(0), 0);
     }
   }, [category, loadQuestions]);
 
@@ -142,17 +144,7 @@ export default function YearQuestionsPage() {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link active">Exams</Link>
-            <Link href="/subjects" className="nav-link">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "32px 24px" }}>
         <div className="breadcrumb">

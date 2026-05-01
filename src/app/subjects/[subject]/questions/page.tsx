@@ -50,7 +50,10 @@ export default function SubjectQuestionsPage() {
   );
 
   useEffect(() => {
-    if (subject) loadQuestions(0);
+    if (subject) {
+      // Small timeout to move state update outside synchronous effect
+      setTimeout(() => loadQuestions(0), 0);
+    }
   }, [subject, loadQuestions]);
 
   const handleLoadMore = () => {
@@ -61,17 +64,7 @@ export default function SubjectQuestionsPage() {
 
   return (
     <main>
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span>📚</span><span className="gradient-text">PYQBank</span>
-          </Link>
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link">Exams</Link>
-            <Link href="/subjects" className="nav-link active">Subjects</Link>
-          </div>
-        </div>
-      </nav>
+      
 
       <div className="container" style={{ padding: "32px 24px" }}>
         <div className="breadcrumb">

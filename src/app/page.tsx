@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { supabase } from "@/lib/supabase";
 import "@/styles/home.css";
 
 export const metadata: Metadata = {
@@ -42,35 +43,33 @@ const SUBJECTS = [
   { name: "Hindi", icon: "🔤", slug: "hindi", count: "12k Questions" },
 ];
 
-const STATS = [
-  { value: "1,25,000+", label: "Total Questions" },
-  { value: "15+", label: "Exams Covered" },
-  { value: "50+", label: "Subjects & Topics" },
-  { value: "10+ Years", label: "Question History" },
-];
+export const revalidate = 3600; // ISR: refresh stats every 1 hour
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch live counts from database
+  const [{ count: qCount }, { count: eCount }, { count: sCount }] = await Promise.all([
+    supabase.from("questions").select("*", { count: "exact", head: true }),
+    supabase.from("exams").select("*", { count: "exact", head: true }),
+    supabase.from("subjects").select("*", { count: "exact", head: true }),
+  ]);
+
+  const formatCount = (n: number | null) => {
+    if (!n) return "0";
+    if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k+`;
+    return n.toString();
+  };
+
+  const LIVE_STATS = [
+    { value: formatCount(qCount), label: "Total Questions" },
+    { value: String(eCount ?? 0) + "+", label: "Exams Covered" },
+    { value: String(sCount ?? 0) + "+", label: "Subjects" },
+    { value: "10+ Years", label: "Question History" },
+  ];
+
   return (
     <main>
       {/* ── Navbar ──────────────────────────────────────────── */}
-      <nav className="navbar">
-        <div className="container navbar-inner">
-          <Link href="/" className="navbar-logo">
-            <span className="logo-icon">📚</span>
-            <span className="gradient-text">PYQBank</span>
-          </Link>
-
-          <div className="navbar-links">
-            <Link href="/exams" className="nav-link">Exams</Link>
-            <Link href="/subjects" className="nav-link">Subjects</Link>
-            <Link href="/quiz" className="nav-link">Quiz Mode</Link>
-          </div>
-
-          <button className="lang-toggle" id="lang-toggle-btn" type="button">
-            🇮🇳 हिंदी
-          </button>
-        </div>
-      </nav>
+      
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="hero section">
@@ -98,11 +97,14 @@ export default function HomePage() {
             <Link href="/subjects" className="btn btn-outline btn-lg">
               Browse by Subject
             </Link>
+            <Link href="/random" className="btn btn-outline btn-lg" style={{ borderColor: "var(--brand-accent)", color: "var(--brand-accent)" }}>
+              🎲 Random Practice
+            </Link>
           </div>
 
           {/* Stats */}
           <div className="stats-row animate-fade-in">
-            {STATS.map((stat) => (
+            {LIVE_STATS.map((stat) => (
               <div key={stat.label} className="stat-item">
                 <span className="stat-value gradient-text">{stat.value}</span>
                 <span className="stat-label">{stat.label}</span>
@@ -242,8 +244,8 @@ export default function HomePage() {
           </div>
 
           <div className="divider" />
-          <p className="footer-copy">
-            © 2024 PYQBank. Built with ❤️ for competitive exam aspirants across India.
+          <p className="text-muted">
+            © 2025-2026 PYQBank. Built with ❤️ for competitive exam aspirants across India.
           </p>
         </div>
       </footer>
