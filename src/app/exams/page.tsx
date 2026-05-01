@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getAllExams } from "@/lib/queries";
-import { supabase } from "@/lib/supabase";
 import type { Metadata } from "next";
 import "@/styles/browse.css";
 
@@ -11,25 +10,6 @@ export const metadata: Metadata = {
 
 export default async function ExamsPage() {
   const exams = await getAllExams();
-
-  // I3: Fetch question counts per exam
-  const { data: countData } = await supabase
-    .from("questions")
-    .select("exam_sessions!inner(categories!inner(exam_id))");
-  
-  const examCounts: Record<number, number> = {};
-  if (countData) {
-    for (const q of countData as any[]) {
-      const examId = q.exam_sessions?.categories?.exam_id;
-      if (examId) examCounts[examId] = (examCounts[examId] || 0) + 1;
-    }
-  }
-
-  const EXAM_META: Record<string, { color: string; tags: string[] }> = {
-    ssc:     { color: "#4F46E5", tags: ["CGL", "CHSL", "MTS", "GD", "CPO"] },
-    railway: { color: "#7C3AED", tags: ["NTPC", "Group D", "ALP", "JE", "RPF"] },
-    banking: { color: "#0891B2", tags: ["IBPS PO", "SBI PO", "IBPS Clerk", "RBI"] },
-  };
 
   return (
     <main>
@@ -59,7 +39,6 @@ export default async function ExamsPage() {
         ) : (
           <div className="browse-grid">
             {exams.map((exam) => {
-              const meta = EXAM_META[exam.slug] ?? { color: "#4F46E5", tags: [] };
               return (
                 <Link key={exam.id} href={`/exams/${exam.slug}`} className="browse-card card">
                   <div className="browse-card-top">
@@ -68,12 +47,16 @@ export default async function ExamsPage() {
                       <h2 className="browse-card-title">{exam.name}</h2>
                       <p className="browse-card-desc">{exam.description}</p>
                     </div>
-                    <span className="badge badge-primary">{examCounts[exam.id] || 0} Qs</span>
+                    <span className="badge badge-primary">{exam.question_count || 0} Qs</span>
                   </div>
                   <div className="exam-tags" style={{ marginTop: "16px" }}>
-                    {meta.tags.map((t) => (
-                      <span key={t} className="exam-tag">{t}</span>
-                    ))}
+                    {exam.tags && exam.tags.length > 0 ? (
+                      exam.tags.map((t) => (
+                        <span key={t} className="exam-tag">{t}</span>
+                      ))
+                    ) : (
+                      <span className="exam-tag">Multiple Categories</span>
+                    )}
                   </div>
                   <div className="browse-card-footer">
                     <span className="btn btn-outline btn-sm">View Categories →</span>

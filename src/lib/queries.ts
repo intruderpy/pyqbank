@@ -1,15 +1,15 @@
 import { supabase } from "./supabase";
-import type { Exam, Category, ExamSession, Subject, Topic, Subtopic, Question } from "@/types/database";
+import type { Exam, Category, ExamSession, Subject, Topic, Subtopic, Question, ExamStats, SubjectStats } from "@/types/database";
 
 // ── Exams ──────────────────────────────────────────────────
 
-export async function getAllExams(): Promise<Exam[]> {
+export async function getAllExams(): Promise<ExamStats[]> {
   const { data, error } = await supabase
-    .from("exams")
-    .select("*, categories!inner(exam_sessions!inner(questions!inner(id)))")
+    .from("exam_stats")
+    .select("*")
     .order("name");
   if (error) throw error;
-  return (data as (Exam & { categories: any[] })[])?.map(({ categories: _, ...rest }) => rest as Exam) ?? [];
+  return data ?? [];
 }
 
 export async function getExamBySlug(slug: string): Promise<Exam | null> {
@@ -23,11 +23,11 @@ export async function getExamBySlug(slug: string): Promise<Exam | null> {
 export async function getCategoriesByExam(examId: number): Promise<Category[]> {
   const { data, error } = await supabase
     .from("categories")
-    .select("*, exam_sessions!inner(questions!inner(id))")
+    .select("*")
     .eq("exam_id", examId)
     .order("name");
   if (error) throw error;
-  return (data as (Category & { exam_sessions: any[] })[])?.map(({ exam_sessions: _, ...rest }) => rest as Category) ?? [];
+  return data ?? [];
 }
 
 export async function getCategoryBySlug(examId: number, slug: string): Promise<Category | null> {
@@ -61,13 +61,13 @@ export async function getSessionsByCategoryAndYear(categoryId: number, year: num
 
 // ── Subjects ───────────────────────────────────────────────
 
-export async function getAllSubjects(): Promise<Subject[]> {
+export async function getAllSubjects(): Promise<SubjectStats[]> {
   const { data, error } = await supabase
-    .from("subjects")
-    .select("*, questions!inner(id)")
+    .from("subject_stats")
+    .select("*")
     .order("name");
   if (error) throw error;
-  return (data as (Subject & { questions: any[] })[])?.map(({ questions: _, ...rest }) => rest as Subject) ?? [];
+  return data ?? [];
 }
 
 export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
@@ -81,11 +81,11 @@ export async function getSubjectBySlug(slug: string): Promise<Subject | null> {
 export async function getTopicsBySubject(subjectId: number): Promise<Topic[]> {
   const { data, error } = await supabase
     .from("topics")
-    .select("*, questions!inner(id)")
+    .select("*")
     .eq("subject_id", subjectId)
     .order("name");
   if (error) throw error;
-  return (data as (Topic & { questions: any[] })[])?.map(({ questions: _, ...rest }) => rest as Topic) ?? [];
+  return data ?? [];
 }
 
 export async function getSubtopicsByTopic(topicId: number): Promise<Subtopic[]> {

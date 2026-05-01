@@ -7,50 +7,16 @@ export const metadata: Metadata = {
   title: "PYQBank — Free Previous Year Questions for SSC, Railway & Banking",
 };
 
-const EXAM_CATEGORIES = [
-  {
-    id: "ssc",
-    name: "SSC",
-    fullName: "Staff Selection Commission",
-    icon: "🏛️",
-    exams: ["CGL", "CHSL", "MTS", "GD", "CPO", "Steno"],
-    questions: "50,000+",
-  },
-  {
-    id: "railway",
-    name: "Railway",
-    fullName: "Indian Railways Recruitment",
-    icon: "🚂",
-    exams: ["NTPC", "Group D", "ALP", "JE", "RPF"],
-    questions: "35,000+",
-  },
-  {
-    id: "banking",
-    name: "Banking",
-    fullName: "Banking Sector Exams",
-    icon: "🏦",
-    exams: ["IBPS PO", "IBPS Clerk", "SBI PO", "SBI Clerk", "RBI"],
-    questions: "40,000+",
-  },
-];
-
-const SUBJECTS = [
-  { name: "Mathematics", icon: "➗", slug: "mathematics", count: "28k Questions" },
-  { name: "English", icon: "📝", slug: "english", count: "22k Questions" },
-  { name: "General Knowledge", icon: "🌍", slug: "general-knowledge", count: "35k Questions" },
-  { name: "Reasoning", icon: "🧩", slug: "reasoning", count: "18k Questions" },
-  { name: "Computer", icon: "💻", slug: "computer", count: "8k Questions" },
-  { name: "Hindi", icon: "🔤", slug: "hindi", count: "12k Questions" },
-];
+import { getAllExams, getAllSubjects } from "@/lib/queries";
 
 export const revalidate = 3600; // ISR: refresh stats every 1 hour
 
 export default async function HomePage() {
-  // Fetch live counts from database
-  const [{ count: qCount }, { count: eCount }, { count: sCount }] = await Promise.all([
+  // Fetch live counts and dynamic categories from database
+  const [{ count: qCount }, exams, subjects] = await Promise.all([
     supabase.from("questions").select("*", { count: "exact", head: true }),
-    supabase.from("exams").select("*", { count: "exact", head: true }),
-    supabase.from("subjects").select("*", { count: "exact", head: true }),
+    getAllExams(),
+    getAllSubjects(),
   ]);
 
   const formatCount = (n: number | null) => {
@@ -61,8 +27,8 @@ export default async function HomePage() {
 
   const LIVE_STATS = [
     { value: formatCount(qCount), label: "Total Questions" },
-    { value: String(eCount ?? 0) + "+", label: "Exams Covered" },
-    { value: String(sCount ?? 0) + "+", label: "Subjects" },
+    { value: String(exams.length) + "+", label: "Exams Covered" },
+    { value: String(subjects.length) + "+", label: "Subjects" },
     { value: "10+ Years", label: "Question History" },
   ];
 
@@ -123,21 +89,25 @@ export default async function HomePage() {
           </div>
 
           <div className="exam-grid">
-            {EXAM_CATEGORIES.map((exam) => (
-              <Link key={exam.id} href={`/exams/${exam.id}`} className="exam-card card">
+            {exams.map((exam) => (
+              <Link key={exam.id} href={`/exams/${exam.slug}`} className="exam-card card">
                 <div className="exam-card-header">
-                  <span className="exam-icon">{exam.icon}</span>
+                  <span className="exam-icon">{exam.icon || "📋"}</span>
                   <div className="exam-header-text">
                     <h3>{exam.name}</h3>
-                    <p>{exam.fullName}</p>
+                    <p>{exam.description}</p>
                   </div>
-                  <span className="badge badge-primary">{exam.questions}</span>
+                  <span className="badge badge-primary">{formatCount(exam.question_count)} Qs</span>
                 </div>
 
                 <div className="exam-tags">
-                  {exam.exams.map((e) => (
-                    <span key={e} className="exam-tag">{e}</span>
-                  ))}
+                  {exam.tags && exam.tags.length > 0 ? (
+                    exam.tags.map((t) => (
+                      <span key={t} className="exam-tag">{t}</span>
+                    ))
+                  ) : (
+                    <span className="exam-tag">Multiple Categories</span>
+                  )}
                 </div>
 
                 <div className="exam-card-footer">
@@ -158,15 +128,15 @@ export default async function HomePage() {
           </div>
 
           <div className="grid-3" style={{ marginTop: "40px" }}>
-            {SUBJECTS.map((subject) => (
+            {subjects.map((subject) => (
               <Link
                 key={subject.slug}
                 href={`/subjects/${subject.slug}`}
                 className="subject-card card"
               >
-                <span className="subject-icon">{subject.icon}</span>
+                <span className="subject-icon">{subject.icon || "📚"}</span>
                 <h4>{subject.name}</h4>
-                <p>{subject.count}</p>
+                <p>{formatCount(subject.question_count)} Questions</p>
               </Link>
             ))}
           </div>

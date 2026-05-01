@@ -111,7 +111,30 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["questions"]["Insert"]>;
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      exam_stats: {
+        Row: {
+          id: number;
+          name: string;
+          slug: string;
+          icon: string | null;
+          description: string | null;
+          created_at: string;
+          question_count: number;
+          tags: string[];
+        };
+      };
+      subject_stats: {
+        Row: {
+          id: number;
+          name: string;
+          slug: string;
+          icon: string | null;
+          created_at: string;
+          question_count: number;
+        };
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       correct_option: "a" | "b" | "c" | "d";
@@ -128,3 +151,5 @@ export type Subject      = Database["public"]["Tables"]["subjects"]["Row"];
 export type Topic        = Database["public"]["Tables"]["topics"]["Row"];
 export type Subtopic     = Database["public"]["Tables"]["subtopics"]["Row"];
 export type Question     = Database["public"]["Tables"]["questions"]["Row"];
+export type ExamStats    = Database["public"]["Views"]["exam_stats"]["Row"];
+export type SubjectStats = Database["public"]["Views"]["subject_stats"]["Row"];
