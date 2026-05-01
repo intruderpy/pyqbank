@@ -20,8 +20,8 @@ export default async function SubjectsPage() {
   
   const subjectCounts: Record<number, number> = {};
   if (countData) {
-    for (const q of countData) {
-      const sid = q.subject_id as number;
+    for (const q of countData as { subject_id: number | null }[]) {
+      const sid = q.subject_id;
       if (sid) subjectCounts[sid] = (subjectCounts[sid] || 0) + 1;
     }
   }

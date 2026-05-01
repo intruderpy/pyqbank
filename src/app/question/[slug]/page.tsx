@@ -155,8 +155,10 @@ export default async function QuestionPage({ params }: Props) {
 
           <div className="options-grid">
             {["a", "b", "c", "d"].map((opt) => {
-              const textHi = question[`option_${opt}_hi`];
-              const textEn = question[`option_${opt}_en`];
+              const hiKey = `option_${opt}_hi` as keyof typeof question;
+              const enKey = `option_${opt}_en` as keyof typeof question;
+              const textHi = question[hiKey] as string | null;
+              const textEn = question[enKey] as string;
               const correct = isCorrect(opt);
 
               return (
